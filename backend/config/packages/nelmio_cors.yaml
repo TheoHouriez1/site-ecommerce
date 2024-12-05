@@ -1,0 +1,11 @@
+nelmio_cors:
+    defaults:
+        allow_credentials: true
+        allow_origin: ['*']  # Si vous souhaitez autoriser tous les domaines, sinon, remplacez par l'URL spécifique de votre frontend, par exemple 'http://localhost:5174'.
+        allow_headers: ['Content-Type', 'Authorization']
+        allow_methods: ['POST', 'GET', 'OPTIONS', 'DELETE', 'PUT']
+        expose_headers: ['Link']
+        max_age: 3600
+    paths:
+        '^/api/':  # Applique cette configuration pour toutes les routes qui commencent par /api/
+            allow_origin: ['*']  # Vous pouvez remplacer '*' par des domaines spécifiques si nécessaire

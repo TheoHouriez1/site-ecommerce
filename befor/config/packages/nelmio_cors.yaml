@@ -1,0 +1,13 @@
+nelmio_cors:
+    defaults:
+        allow_credentials: true
+        allow_origin: ['*'] # Origine de ton application React
+        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE']
+        allow_headers: ['Content-Type', 'Authorization']
+        max_age: 3600
+    paths:
+        '^/api/': # Les endpoints commençant par /api
+            allow_origin: ['*']
+            allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'DELETE']
+            allow_headers: ['Content-Type', 'Authorization']
+            max_age: 3600

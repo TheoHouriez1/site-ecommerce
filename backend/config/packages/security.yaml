@@ -1,0 +1,47 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/  # Routes de développement non sécurisées
+            security: false
+        
+        main:
+            lazy: true
+            stateless: false
+            provider: app_user_provider
+            custom_authenticator: App\Security\SecurityAuthenticator  # Authentificateur personnalisé pour la connexion
+            logout:
+                path: app_logout  # Route pour se déconnecter
+            remember_me:
+                secret: '%kernel.secret%'  # Secret pour la signature du cookie
+                lifetime: 3600  # Durée de vie du cookie "remember me"
+                path: /  # Chemin sur lequel le cookie est valide
+                secure: false  # Cookie non sécurisé (en HTTP)
+                httponly: true  # Accès uniquement via HTTP
+                samesite: 'lax'  # Paramètre pour la politique SameSite
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true  # Protection CSRF activée
+
+        # API qui est stateless (pas de session)
+        api:
+            pattern: ^/api/
+            stateless: true  # Pas de gestion de session pour l'API
+            custom_authenticator: App\Security\SecurityAuthenticator  # Authentificateur personnalisé pour l'API
+            # Pas d'authentification pour /api/register et autres routes d'API publiques
+
+    access_control:
+        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/login
+        - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }  # Accès à /api/logout uniquement pour les utilisateurs authentifiés
+        - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/register
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  # Requiert une authentification pour toutes les autres routes de l'API
+x

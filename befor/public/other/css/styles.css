@@ -1,0 +1,53 @@
+.logo_img {
+    display: inline-block !important; /* Visible par défaut */
+}
+
+.text-login {
+    display: none !important; /* Masqué par défaut */
+
+}
+.card {
+    height: 450px; /* Ajustez la hauteur de la carte comme nécessaire */
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Assure un bon espacement entre les éléments */
+}
+
+.card-img-top {
+    object-fit: cover; /* Assure que l'image remplit le conteneur sans déformer le ratio */
+    height: 250px; /* Fixe la hauteur de l'image */
+    width: 100%; /* Assure que l'image prend toute la largeur de la carte */
+}
+
+
+
+@media screen and (max-width: 1500px) {
+
+
+    .logo_img {
+        display: none !important; /* Cache le logo */
+    }
+
+    .text-login {
+        display: inline-block !important; /* Affiche le texte "login" */
+    }
+    .row {
+        display: flex; /* Utiliser flexbox pour disposer les cartes */
+        flex-wrap: wrap; /* Permet aux cartes de passer à la ligne suivante */
+    }
+
+    .col-md-3{
+        flex:0 0 auto;
+        width:50%
+    }
+    .col-md-3 { /* Utilisez col-md-6 pour deux cartes par ligne */
+        flex: 0 0 50%; /* Chaque carte prendra 50% de la largeur de la ligne */
+        margin-bottom: 20px; /* Espace entre les lignes */
+    }
+}
+
+    
+    
