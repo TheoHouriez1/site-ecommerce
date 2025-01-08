@@ -1,5 +1,6 @@
 import ThemeSwitcher from './ThemeSwitch.jsx'
-
+import { DrawerComponent } from './SeachComponent.tsx'
+import { MagnifyingGlass  } from 'phosphor-react'
 
 import {
     Navbar,
@@ -10,6 +11,8 @@ import {
     NavbarItem,
     NavbarList,
     Dropdown,
+    InputIcon,
+    Input
   } from 'keep-react'
   
   export const NavbarComponent = () => {
@@ -17,7 +20,7 @@ import {
       <Navbar>
         <NavbarContainer className='container mx-auto'>
           <NavbarList>
-            <NavbarItem>Projects</NavbarItem>
+            <NavbarItem>LOGO</NavbarItem>
             <NavbarItem>Research</NavbarItem>
             <NavbarItem>Contact</NavbarItem>
           </NavbarList>
@@ -25,8 +28,7 @@ import {
           <NavbarItem>Shop Théo</NavbarItem>
           </NavbarBrand>
           <NavbarList>
-            <NavbarItem>Figma</NavbarItem>
-            <NavbarItem>Documentation</NavbarItem>
+          <NavbarList> <DrawerComponent /> </NavbarList>
             <NavbarItem><ThemeSwitcher /></NavbarItem>
           </NavbarList>
           <NavbarCollapseBtn />
@@ -35,7 +37,7 @@ import {
             <NavbarItem>Research</NavbarItem>
             <NavbarItem>Contact</NavbarItem>
             <NavbarItem>Figma</NavbarItem>
-            <NavbarItem>Documentation</NavbarItem>
+            <NavbarItem>doccumentation</NavbarItem>
             <NavbarItem><ThemeSwitcher /></NavbarItem>
           </NavbarCollapse>
         </NavbarContainer>

@@ -44,4 +44,3 @@ security:
         - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }  # Accès à /api/logout uniquement pour les utilisateurs authentifiés
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/register
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  # Requiert une authentification pour toutes les autres routes de l'API
-x

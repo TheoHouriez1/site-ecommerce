@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Envelope, Lock } from 'phosphor-react';
 import { Button, InputIcon, Input, Label } from 'keep-react';
-import MyModal from './Modal';
-import { useAuth } from '../context/AuthContext';
-import { ThemeProvider } from "../components/Theme-provider.tsx";
+import MyModal from './Modal.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { ThemeProvider } from "./Theme-provider.tsx";
 
 export const LoginComponent = () => {
   const [email, setEmail] = useState('');
