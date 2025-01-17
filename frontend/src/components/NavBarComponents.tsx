@@ -1,6 +1,7 @@
 import ThemeSwitcher from './ThemeSwitch.jsx'
 import { DrawerComponent } from './SeachComponent.tsx'
 import { MagnifyingGlass  } from 'phosphor-react'
+import '../index.css'; 
 
 import {
     Navbar,
@@ -12,14 +13,15 @@ import {
     NavbarList,
     Dropdown,
     InputIcon,
-    Input
+    Input,
+  
   } from 'keep-react'
   
   export const NavbarComponent = () => {
     return (
-      <Navbar>
+      <Navbar defaultTheme="light" storageKey="vite-ui-theme">
         <NavbarContainer className='container mx-auto'>
-          <NavbarList>
+          <NavbarList >
             <NavbarItem>LOGO</NavbarItem>
             <NavbarItem>Research</NavbarItem>
             <NavbarItem>Contact</NavbarItem>
@@ -32,7 +34,7 @@ import {
             <NavbarItem><ThemeSwitcher /></NavbarItem>
           </NavbarList>
           <NavbarCollapseBtn />
-          <NavbarCollapse>
+          <NavbarCollapse defaultTheme="light" storageKey="vite-ui-theme">
             <NavbarItem>Projects</NavbarItem>
             <NavbarItem>Research</NavbarItem>
             <NavbarItem>Contact</NavbarItem>

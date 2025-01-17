@@ -1,6 +1,7 @@
 // src/pages/Admin.js
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import '../index.css'; 
 
 const Admin = () => {
   const { user } = useAuth();

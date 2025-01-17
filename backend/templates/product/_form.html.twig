@@ -13,7 +13,11 @@
     
     <label for="">Sous catergories lié au Produit</label><br>
     {{ form_widget(form.subCategory,{attr:{'class':'form form-control'}}) }}<br>
-     <label for="">image lié au Produit</label><br>
+     <label for="">image lié au Produit n1</label><br>
     {{ form_widget(form.image,{attr:{'class':'form'}}) }}<br>
+        <label for="">image lié au Produit n2</label><br>
+    {{ form_widget(form.image2,{attr:{'class':'form'}}) }}<br>
+        <label for="">image lié au Produit n3</label><br>
+    {{ form_widget(form.image3,{attr:{'class':'form'}}) }}<br>
     <button class="btn btn-outline-primary">{{ button_label|default('Save') }}</button><br>
 {{ form_end(form) }}

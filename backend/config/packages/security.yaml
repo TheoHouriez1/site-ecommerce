@@ -17,7 +17,8 @@ security:
             lazy: true
             stateless: false
             provider: app_user_provider
-            custom_authenticator: App\Security\SecurityAuthenticator  # Authentificateur personnalisé pour la connexion
+            custom_authenticator:
+                - App\Security\SecurityAuthenticator
             logout:
                 path: app_logout  # Route pour se déconnecter
             remember_me:
@@ -27,20 +28,21 @@ security:
                 secure: false  # Cookie non sécurisé (en HTTP)
                 httponly: true  # Accès uniquement via HTTP
                 samesite: 'lax'  # Paramètre pour la politique SameSite
+                always_remember_me: true
             form_login:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true  # Protection CSRF activée
 
-        # API qui est stateless (pas de session)
+        # API
         api:
             pattern: ^/api/
-            stateless: true  # Pas de gestion de session pour l'API
-            custom_authenticator: App\Security\SecurityAuthenticator  # Authentificateur personnalisé pour l'API
-            # Pas d'authentification pour /api/register et autres routes d'API publiques
+            stateless: true 
+            security: false  # Désactive l'authentification pour toutes les routes /api/
+            # Enlever le custom_authenticator ici si tu ne veux pas d'authentification pour l'API
+            # Il est préférable de ne pas définir un custom authenticator si l'on veut permettre l'accès sans authentification
 
     access_control:
         - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/login
-        - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }  # Accès à /api/logout uniquement pour les utilisateurs authentifiés
         - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/register
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  # Requiert une authentification pour toutes les autres routes de l'API

@@ -14,27 +14,23 @@ class SubCategory
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['subcategory:read', 'product:read'])]
-    #[MaxDepth(1)]
+    #[Groups(['subcategory:read', 'subcategory:write'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['subcategory:read', 'product:read'])]
-    #[MaxDepth(1)]
+    #[Groups(['subcategory:read', 'subcategory:write'])]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'subCategories')]
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'subCategories')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['subcategory:read', 'product:read'])]
-    #[MaxDepth(1)]
-    private ?Category $Category = null;
+    #[Groups(['subcategory:read', 'subcategory:write'])]
+    private ?Category $category = null;
 
     /**
      * @var Collection<int, Product>
      */
-    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'subCategory')]
-    #[Groups(['subcategory:read', 'product:read'])]
-    #[MaxDepth(1)] 
+    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'subCategories')]
+    #[Groups(['subcategory:read'])]
     private Collection $products;
 
     public function __construct()
@@ -61,12 +57,12 @@ class SubCategory
 
     public function getCategory(): ?Category
     {
-        return $this->Category;
+        return $this->category;
     }
 
-    public function setCategory(?Category $Category): static
+    public function setCategory(?Category $category): static
     {
-        $this->Category = $Category;
+        $this->category = $category;
 
         return $this;
     }
@@ -98,3 +94,4 @@ class SubCategory
         return $this;
     }
 }
+    

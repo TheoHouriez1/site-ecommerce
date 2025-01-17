@@ -30,50 +30,56 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/new', name: 'app_product_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager,SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $product = new Product();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            $image = $form->get('image')->getData();
-
-            if ($image){
-                $orignalName = pathinfo($image->getClientOriginalName(),PATHINFO_FILENAME);
-                $safeFileName = $slugger->slug($orignalName);
-                $newFileName  = $safeFileName.'-'.uniqid().'.'.$image->guessExtension();
-                
-                try{
-                    $image ->move(
-                        $this->getParameter('image_dir'),
-                        $newFileName
-                    );
-                }catch (FileException $exception){}
-
-                $product->setImage($newFileName);
+            // Gérer les trois images
+            foreach (['image', 'image2', 'image3'] as $imageField) {
+                $image = $form->get($imageField)->getData();
+                if ($image) {
+                    $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFileName = $slugger->slug($originalName);
+                    $newFileName = $safeFileName . '-' . uniqid() . '.' . $image->guessExtension();
+    
+                    try {
+                        $image->move(
+                            $this->getParameter('image_dir'),
+                            $newFileName
+                        );
+                    } catch (FileException $exception) {
+                        // Gérer l'exception si nécessaire
+                    }
+    
+                    // Setter dynamique pour chaque champ d'image
+                    $setter = 'set' . ucfirst($imageField);
+                    $product->$setter($newFileName);
+                }
             }
+    
             $entityManager->persist($product);
             $entityManager->flush();
-
+    
             $stockHistory = new AddProductHistory();
-            $stockHistory ->setQty($product->getStock());
-            $stockHistory ->setProduct($product);
-            $stockHistory ->setCreatedAt(new DateTimeImmutable());
+            $stockHistory->setQty($product->getStock());
+            $stockHistory->setProduct($product);
+            $stockHistory->setCreatedAt(new DateTimeImmutable());
             $entityManager->persist($stockHistory);
             $entityManager->flush();
-
-
-            $this ->addFlash('success','votre produit a été ajouté !');
+    
+            $this->addFlash('success', 'Votre produit a été ajouté !');
             return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
         }
-
+    
         return $this->render('product/new.html.twig', [
             'product' => $product,
             'form' => $form,
         ]);
     }
-
+    
     #[Route('/{id}', name: 'app_product_show', methods: ['GET'])]
     public function show(Product $product): Response
     {
@@ -99,7 +105,7 @@ final class ProductController extends AbstractController
                 
                 try{
                     $image ->move(
-                        $this->getParameter(name :'image_dir'),
+                        $this->getParameter('image_dir'),
                         $newFileName
                     );
                 }catch (FileException $exception){}

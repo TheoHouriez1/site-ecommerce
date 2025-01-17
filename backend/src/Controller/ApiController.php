@@ -10,7 +10,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
+#[Route('/back')]
 class ApiController extends AbstractController
 {
     private SerializerInterface $serializer;
@@ -20,7 +22,7 @@ class ApiController extends AbstractController
         $this->serializer = $serializer;
     }
     
-    #[Route('/api/product', name: 'api_products', methods: ['GET'])]
+    #[Route('/product', name: 'api_products', methods: ['GET'])]
     public function getProducts(EntityManagerInterface $entityManager): JsonResponse
     {
         $products = $entityManager->getRepository(Product::class)->findAll();
@@ -29,7 +31,7 @@ class ApiController extends AbstractController
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
-    #[Route('/api/subcategory', name: 'api_subcategory', methods: ['GET'])]
+    #[Route('/subcategory', name: 'api_subcategory', methods: ['GET'])]
     public function getSubCategories(EntityManagerInterface $entityManager): JsonResponse
     {
         $subCategories = $entityManager->getRepository(SubCategory::class)->findAll();
@@ -38,7 +40,7 @@ class ApiController extends AbstractController
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
-    #[Route('/api/users', name: 'api_users', methods: ['GET'])]
+    #[Route('/users', name: 'api_users', methods: ['GET'])]
     public function getUsers(EntityManagerInterface $entityManager): JsonResponse
     {
         $users = $entityManager->getRepository(User::class)->findAll();

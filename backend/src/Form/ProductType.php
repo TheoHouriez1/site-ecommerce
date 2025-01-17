@@ -37,6 +37,38 @@ class ProductType extends AbstractType
                     ])
                 ]
             ])
+            ->add('image2',filetype::class ,[
+                'label'=> 'image du produit',
+                'mapped'=> false,
+                'required'=> false,
+                'constraints'=>[
+                    new File([
+                        "maxSize" =>"1024k",
+                        "mimeTypes" =>[
+                            'image/jpg',
+                            'image/png',
+                            'image/jpeg'
+                        ],
+                        'mimeTypesMessage' => "votre image de produit doit etre au format valide(png, jpg, jpeg)"
+                    ])
+                ]
+            ])
+            ->add('image3',filetype::class ,[
+                'label'=> 'image du produit',
+                'mapped'=> false,
+                'required'=> false,
+                'constraints'=>[
+                    new File([
+                        "maxSize" =>"1024k",
+                        "mimeTypes" =>[
+                            'image/jpg',
+                            'image/png',
+                            'image/jpeg'
+                        ],
+                        'mimeTypesMessage' => "votre image de produit doit etre au format valide(png, jpg, jpeg)"
+                    ])
+                ]
+            ])
             ->add('subCategory', EntityType::class, [
                 'class' => SubCategory::class,
                 'choice_label' => 'name',

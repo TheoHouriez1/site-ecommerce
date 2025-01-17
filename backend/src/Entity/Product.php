@@ -52,6 +52,14 @@ class Product
     #[ORM\OneToMany(targetEntity: AddProductHistory::class, mappedBy: 'product')]
     private Collection $addProductHistories;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['product:read'])]
+    private ?string $image2 = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['product:read'])]
+    private ?string $image3 = null;
+
     public function __construct()
     {
         $this->subCategory = new ArrayCollection();
@@ -173,6 +181,30 @@ class Product
                 $addProductHistory->setProduct(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImage2(): ?string
+    {
+        return $this->image2;
+    }
+
+    public function setImage2(?string $image2): static
+    {
+        $this->image2 = $image2;
+
+        return $this;
+    }
+
+    public function getImage3(): ?string
+    {
+        return $this->image3;
+    }
+
+    public function setImage3(?string $image3): static
+    {
+        $this->image3 = $image3;
 
         return $this;
     }

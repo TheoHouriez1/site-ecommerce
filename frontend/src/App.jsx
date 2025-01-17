@@ -9,14 +9,16 @@ import { RegisterComponent } from './components/RegisterComponents';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginComponent />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/register" element={<RegisterComponent />} />
-        </Routes>
-      </Router>
+      <BrowserRouter>
+        <Router>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginComponent />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/register" element={<RegisterComponent />} />
+          </Routes>
+        </Router>
+      </BrowserRouter>
     </AuthProvider>
   );
 }
