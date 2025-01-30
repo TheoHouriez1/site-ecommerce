@@ -1,24 +1,31 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ReactDOM from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from './context/AuthContext';
 import { LoginComponent } from './components/LoginComponent';
 import HomePage from './pages/HomePage';
-import AdminPage from './pages/AdminPage';
-import { RegisterComponent } from './components/RegisterComponents';
+import { RegisterComponent } from './components/RegisterComponent';
+import ProductCard from './pages/ProductCard';
+import StripeCart from './components/Cart';
+import { CartProvider } from './components/CartContext';
+import PannierComponent from './components/PannierComponent';
+
  
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Router>
+      <CartProvider> {/* Ajoutez le CartProvider ici */}
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomePage/>} />
             <Route path="/login" element={<LoginComponent />} />
-            <Route path="/admin" element={<AdminPage />} />
             <Route path="/register" element={<RegisterComponent />} />
+            <Route path="/productcard" element={<ProductCard />} />
+            <Route path="/cart" element={<StripeCart />} />
+            <Route path="/panniercomponent" element={<PannierComponent />} />
           </Routes>
-        </Router>
-      </BrowserRouter>
+        </BrowserRouter>
+      </CartProvider>
     </AuthProvider>
   );
 }

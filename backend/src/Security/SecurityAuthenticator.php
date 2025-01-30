@@ -16,16 +16,13 @@ class SecurityAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        // Supporte uniquement les requêtes POST sur /api/login
         return $request->getPathInfo() === '/api/login' && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): Passport
     {
-        // Récupération des données JSON
         $data = json_decode($request->getContent(), true);
 
-        // Validation des champs attendus
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
 
@@ -33,22 +30,39 @@ class SecurityAuthenticator extends AbstractAuthenticator
             throw new AuthenticationException('Email ou mot de passe manquant.');
         }
 
-        // Retourne un Passport avec les informations nécessaires
         return new Passport(
-            new UserBadge($email), // Charge l'utilisateur à partir de l'email
-            new PasswordCredentials($password) // Vérifie le mot de passe
+            new UserBadge($email),
+            new PasswordCredentials($password)
         );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // Réponse en cas de succès de l'authentification
-        return new Response(json_encode(['message' => 'Connexion réussie']), Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        $user = $token->getUser();
+
+        // Créer un tableau avec toutes les données utilisateur
+        $userData = [
+            'message' => 'Connexion réussie',
+            'id' => $user->getId(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles()
+        ];
+
+        return new Response(
+            json_encode($userData), 
+            Response::HTTP_OK, 
+            ['Content-Type' => 'application/json']
+        );
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        // Réponse en cas d'échec de l'authentification
-        return new Response(json_encode(['error' => $exception->getMessage()]), Response::HTTP_UNAUTHORIZED, ['Content-Type' => 'application/json']);
+        return new Response(
+            json_encode(['error' => $exception->getMessage()]), 
+            Response::HTTP_UNAUTHORIZED, 
+            ['Content-Type' => 'application/json']
+        );
     }
 }

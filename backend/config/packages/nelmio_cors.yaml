@@ -7,5 +7,7 @@ nelmio_cors:
         expose_headers: ['Link']
         max_age: 3600
     paths:
-        '^/api/':  # Applique cette configuration pour toutes les routes qui commencent par /api/
-            allow_origin: ['*']  # Vous pouvez remplacer '*' par des domaines spécifiques si nécessaire
+        '^/api/':
+            allow_origin: ['*']
+            allow_headers: ['*']
+            allow_methods: ['POST', 'GET', 'OPTIONS'] # Vous pouvez remplacer '*' par des domaines spécifiques si nécessaire

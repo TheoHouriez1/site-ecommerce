@@ -1,29 +1,23 @@
 'use client';
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Envelope, Lock } from 'phosphor-react';
-import { Button, InputIcon, Input, Label } from 'keep-react';
-import MyModal from './Modal.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { ThemeProvider } from "./Theme-provider.tsx";
+import { Envelope, Lock } from 'phosphor-react';
 
 export const LoginComponent = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMessage('');
-
+  
     try {
+      console.log('Tentative de connexion avec:', { email, password });
+  
       const response = await fetch(
         'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/login',
         {
@@ -31,105 +25,129 @@ export const LoginComponent = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // Inclure les cookies pour synchroniser les sessions
+          credentials: 'include',
           body: JSON.stringify({ email, password }),
         }
       );
-
+  
+      console.log('Statut de la réponse:', response.status);
+      const data = await response.json();
+      console.log('Données reçues:', data);
+  
       if (response.ok) {
-        const result = await response.json();
-        console.log('Connexion réussie React:', result);
-
-        // Enregistrer les informations utilisateur dans le contexte
-        login({
-          id: result.id,
-          firstName: result.firstName,
-          lastName: result.lastName,
-          email: result.email,
-          roles: result.roles, // Tableau des rôles
+        console.log('Connexion réussie, données à stocker:', {
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          roles: data.roles,
+          isAuthenticated: true
         });
-
-        // Ouvrir le modal de succès
-        setIsModalOpen(true);
-        setTimeout(() => {
-          setIsModalOpen(false);
-          navigate('/'); // Rediriger vers l'accueil
-        }, 3000);
+  
+        login({
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          roles: data.roles,
+          isAuthenticated: true
+        });
+  
+        navigate('/');
       } else {
-        const errorData = await response.json();
-        setErrorMessage(errorData.error || 'Identifiants invalides.');
+        console.error('Erreur de connexion:', data);
       }
     } catch (error) {
-      console.error('Erreur réseau :', error);
-      setErrorMessage('Impossible de se connecter. Veuillez réessayer.');
+      console.error('Erreur:', error);
     } finally {
-      setLoading(false); // Arrêter le chargement
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <div className="flex min-h-screen items-center justify-center">
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-md space-y-4 rounded-lg bg-white p-6 shadow-lg"
-          >
-            <fieldset className="space-y-1">
-              <Label htmlFor="InputEmail">Email</Label> {/* ID mis à jour */}
+    <div className="flex min-h-screen items-center justify-center bg-gray-50/50">
+      <div className="w-full max-w-md">
+        <form 
+          onSubmit={handleSubmit}
+          className="bg-white shadow-lg rounded-xl p-8 space-y-6 border border-gray-100 hover:border-gray-200 transition-all duration-300"
+        >
+          <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
+            Connexion
+          </h2>
+
+          <div className="space-y-4">
+            {/* Email Input */}
+            <div className="relative">
+              <label 
+                htmlFor="email" 
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
               <div className="relative">
-                <Input
-                  id="InputEmail"
-                  placeholder="Entrez votre email"
-                  className="ps-11"
+                <input
+                  type="email"
+                  id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
+                  placeholder="Votre email"
+                  required
+                  className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
                 />
-                <InputIcon>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Envelope size={19} color="#AFBACA" />
-                </InputIcon>
+                </div>
               </div>
-            </fieldset>
-            <fieldset className="space-y-1">
-              <Label htmlFor="InputPassword">Mot de passe</Label> {/* ID mis à jour */}
+            </div>
+
+            {/* Password Input */}
+            <div className="relative">
+              <label 
+                htmlFor="password" 
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
+                Mot de passe
+              </label>
               <div className="relative">
-                <Input
-                  id="InputPassword"
-                  placeholder="Entrez votre mot de passe"
+                <input
                   type="password"
-                  className="ps-11"
+                  id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
+                  placeholder="Votre mot de passe"
+                  required
+                  className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
                 />
-                <InputIcon>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock size={19} color="#AFBACA" />
-                </InputIcon>
+                </div>
               </div>
-            </fieldset>
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-            <Button
-              size="sm"
-              color="secondary"
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Chargement...' : 'Se connecter'}
-            </Button>
-          </form>
-        </div>
+            </div>
 
-        {/* Modal de succès */}
-        {isModalOpen && (
-          <MyModal
-            auth="Connexion réussie"
-            home="Bienvenue dans votre espace utilisateur !"
-            button="Aller à l'accueil"
-          />
-        )}
-      </ThemeProvider>
-    </>
+            {/* Submit Button */}
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300"
+            >
+              {loading ? 'Connexion en cours...' : 'Se connecter'}
+            </button>
+
+            {/* Register Link */}
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Pas de compte ?{' '}
+                <a 
+                  href="/register" 
+                  className="text-blue-600 hover:underline transition duration-300"
+                >
+                  Inscrivez-vous
+                </a>
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };

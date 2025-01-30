@@ -5,14 +5,22 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Entity\SubCategory;
 use App\Entity\User;
+use App\Entity\Order;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/back')]
 class ApiController extends AbstractController
 {
     private SerializerInterface $serializer;
@@ -31,49 +39,210 @@ class ApiController extends AbstractController
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
-    #[Route('/subcategory', name: 'api_subcategory', methods: ['GET'])]
-    public function getSubCategories(EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    public function login(Request $request, Security $security, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): JsonResponse
     {
-        $subCategories = $entityManager->getRepository(SubCategory::class)->findAll();
-        $jsonContent = $this->serializer->serialize($subCategories, 'json', ['groups' => 'subcategory:read']);
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
 
-        return new JsonResponse($jsonContent, 200, [], true);
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
+            return new JsonResponse(['error' => 'Email ou mot de passe incorrect'], 401);
+        }
+
+        // Si l'authentification réussit
+        $userData = [
+            'message' => 'Connexion réussie',
+            'id' => $user->getId(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles()
+        ];
+
+        // Créer la session
+        if (!$request->getSession()) {
+            $request->setSession(new Session());
+        }
+        
+        $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+        $security->getToken()->setToken($token);
+        $request->getSession()->set(Security::LAST_USERNAME, $email);
+
+        return new JsonResponse($userData);
     }
 
-    #[Route('/users', name: 'api_users', methods: ['GET'])]
-    public function getUsers(EntityManagerInterface $entityManager): JsonResponse
-    {
-        $users = $entityManager->getRepository(User::class)->findAll();
-        $jsonContent = $this->serializer->serialize($users, 'json', ['groups' => 'users:read']);
+    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
+    public function register(
+        Request $request, 
+        UserPasswordHasherInterface $passwordHasher, 
+        EntityManagerInterface $em
+        ): JsonResponse {
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            // Validation des données
+            if (!$data) {
+                return new JsonResponse(['error' => 'Données invalides'], 400);
+            }
 
-        return new JsonResponse($jsonContent, 200, [], true);
+            $email = $data['email'] ?? null;
+            $password = $data['password'] ?? null;
+            $firstName = $data['firstName'] ?? null;
+            $lastName = $data['lastName'] ?? null;
+
+            // Validations détaillées
+            $errors = [];
+            if (!$email) $errors[] = 'Email manquant';
+            if (!$password) $errors[] = 'Mot de passe manquant';
+            if (!$firstName) $errors[] = 'Prénom manquant';
+            if (!$lastName) $errors[] = 'Nom manquant';
+
+            if (!empty($errors)) {
+                return new JsonResponse(['errors' => $errors], 400);
+            }
+
+            // Vérification si l'utilisateur existe déjà
+            $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+            if ($existingUser) {
+                return new JsonResponse(['error' => 'Cet email est déjà utilisé'], 400);
+            }
+
+            // Création du nouvel utilisateur
+            $user = new User();
+            $user->setEmail($email);
+            $user->setFirstName($firstName);
+            $user->setLastName($lastName);
+            $user->setPassword($passwordHasher->hashPassword($user, $password));
+            $user->setRoles(['ROLE_USER']);
+
+            $em->persist($user);
+            $em->flush();
+
+            // Retourner les données utilisateur en JSON
+            return new JsonResponse([
+                'message' => 'Inscription réussie',
+                'user' => [
+                    'id' => $user->getId(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'email' => $user->getEmail(),
+                    'roles' => $user->getRoles()
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            // Log de l'erreur
+            $this->container->get('logger')->error('Erreur d\'inscription : ' . $e->getMessage());
+
+            // Retourne une réponse générique
+            return new JsonResponse([
+                'error' => 'Erreur interne du serveur',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/check-auth', name: 'api_check_auth', methods: ['GET'])]
+    public function checkAuth(Security $security): JsonResponse
+    {
+    $user = $security->getUser();
+
+    if (!$user) {
+        return new JsonResponse(['authenticated' => false], 401);
+    }
+
+    return new JsonResponse([
+        'authenticated' => true,
+        'user' => [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'roles' => $user->getRoles()
+        ]
+    ]);
+    }
+
+    #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
+    public function logout(Security $security): JsonResponse
+    {
+        $security->logout();
+        return new JsonResponse(['message' => 'Déconnexion réussie']);
+    }
+
+
+    #[Route('/api/create-order', name: 'api_create_order', methods: ['POST'])]
+    #[IsGranted('PUBLIC_ACCESS')]  // 🔹 Ajoute ça pour désactiver la sécurité
+
+    public function createOrder(Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+    
+            // 🔹 Vérification des données reçues
+            if (!$data) {
+                return new JsonResponse(['error' => 'Données invalides'], 400);
+            }
+    
+            $nom = $data['nom'] ?? null;
+            $prenom = $data['prenom'] ?? null;
+            $email = $data['email'] ?? null;
+            $address = $data['address'] ?? null;
+            $article = $data['article'] ?? null;
+            $price = $data['price'] ?? null;
+    
+            // 🔹 Vérifications détaillées
+            $errors = [];
+            if (!$nom) $errors[] = 'Nom manquant';
+            if (!$prenom) $errors[] = 'Prénom manquant';
+            if (!$email) $errors[] = 'Email manquant';
+            if (!$address) $errors[] = 'Adresse manquante';
+            if (!$article) $errors[] = 'Article(s) manquant(s)';
+            if (!$price) $errors[] = 'Prix manquant';
+    
+            if (!empty($errors)) {
+                return new JsonResponse(['errors' => $errors], 400);
+            }
+    
+            // 🔹 Création de la commande
+            $order = new Order();
+            $order->setNom($nom);
+            $order->setPrenom($prenom);
+            $order->setEmail($email);
+            $order->setAddress($address);
+            $order->setArticle($article);
+            $order->setPrice((float)$price);
+            $order->setDateCommande(new \DateTimeImmutable());
+    
+            $em->persist($order);
+            $em->flush();
+    
+            return new JsonResponse([
+                'message' => 'Commande enregistrée avec succès',
+                'order' => [
+                    'id' => $order->getId(),
+                    'nom' => $order->getNom(),
+                    'prenom' => $order->getPrenom(),
+                    'email' => $order->getEmail(),
+                    'address' => $order->getAddress(),
+                    'article' => $order->getArticle(),
+                    'price' => $order->getPrice(),
+                    'dateCommande' => $order->getDateCommande()->format('Y-m-d H:i:s')
+                ]
+            ], 201);
+    
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Erreur interne du serveur',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
     
-    // src/Controller/ApiController.php
-
-    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    public function login(EntityManagerInterface $em, Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
-    {
-    $data = json_decode($request->getContent(), true);
-    $email = $data['email'] ?? null;
-    $password = $data['password'] ?? null;
-
-    if (!$email || !$password) {
-        return new JsonResponse(['error' => 'Missing email or password'], 400);
-    }
-
-    // Debugging: log the received email
-    if (!$user = $em->getRepository(User::class)->findOneBy(['email' => $email])) {
-        return new JsonResponse(['error' => 'User not found'], 404);
-    }
-
-    // Debugging: log the password verification
-    if (!$passwordHasher->isPasswordValid($user, $password)) {
-        return new JsonResponse(['error' => 'Invalid password'], 401);
-    }
-
-    return new JsonResponse(['message' => 'Login successful'], 200);
-    }
-
+    
+    
     
 }

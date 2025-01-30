@@ -10,7 +10,7 @@ security:
 
     firewalls:
         dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/  # Routes de développement non sécurisées
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         
         main:
@@ -20,29 +20,28 @@ security:
             custom_authenticator:
                 - App\Security\SecurityAuthenticator
             logout:
-                path: app_logout  # Route pour se déconnecter
+                path: app_logout
             remember_me:
-                secret: '%kernel.secret%'  # Secret pour la signature du cookie
-                lifetime: 3600  # Durée de vie du cookie "remember me"
-                path: /  # Chemin sur lequel le cookie est valide
-                secure: false  # Cookie non sécurisé (en HTTP)
-                httponly: true  # Accès uniquement via HTTP
-                samesite: 'lax'  # Paramètre pour la politique SameSite
+                secret: '%kernel.secret%'
+                lifetime: 3600
+                path: /
+                secure: false
+                httponly: true
+                samesite: 'lax'
                 always_remember_me: true
             form_login:
                 login_path: app_login
                 check_path: app_login
-                enable_csrf: true  # Protection CSRF activée
+                enable_csrf: true
 
-        # API
+        # 🔹 Désactive la sécurité pour toutes les routes API
         api:
             pattern: ^/api/
-            stateless: true 
-            security: false  # Désactive l'authentification pour toutes les routes /api/
-            # Enlever le custom_authenticator ici si tu ne veux pas d'authentification pour l'API
-            # Il est préférable de ne pas définir un custom authenticator si l'on veut permettre l'accès sans authentification
+            stateless: true
+            security: false
 
     access_control:
-        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/login
-        - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }  # Permet un accès sans authentification à /api/register
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  # Requiert une authentification pour toutes les autres routes de l'API
+        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/create-order, roles: PUBLIC_ACCESS }  # ✅ Cette ligne doit être avant /api/
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  # ✅ Ce bloc doit être à la fin pour ne pas bloquer create-order
