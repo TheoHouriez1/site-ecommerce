@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { NavbarComponent } from '../components/NavBarComponents';
 import { Package, CreditCard, Mail, User, Home, Check, AlertCircle } from 'lucide-react';
 
+
 const stripePromise = loadStripe('pk_test_51QmzOTIE3DEUnxOz4D7vaYyWg2lCUfqlBuhyZr1mSPRUpWuEexP3XSBmnw1fOSBLQVUAv4YpS4KxdRbaof3FHXqf00uhvSiyP4');
 
 const ProductItem = ({ item }) => (

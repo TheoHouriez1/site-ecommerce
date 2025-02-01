@@ -119,7 +119,7 @@ const PannierPages = () => {
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <NavbarComponent />
+        <NavbarComponent /> <br />
         <div className="pt-20">
           <EmptyCart onContinueShopping={() => navigate('/')} />
         </div>
@@ -129,7 +129,7 @@ const PannierPages = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavbarComponent />
+      <NavbarComponent /><br /><br />
       <div className="pt-20 px-2 sm:px-4 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8">

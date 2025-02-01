@@ -2,19 +2,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Envelope, Lock } from 'phosphor-react';
+import { Mail, Lock } from 'lucide-react';
 
 export const LoginComponent = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
+
     try {
       console.log('🔹 Tentative de connexion avec:', { email, password, rememberMe });
       const response = await fetch(
@@ -30,13 +33,12 @@ export const LoginComponent = () => {
         }
       );
       console.log('🔹 Statut de la réponse:', response.status);
-
       const data = await response.json().catch(() => {
         console.error("⚠️ La réponse de l'API n'est pas un JSON valide.");
         return null;
       });
       console.log('🔹 Données reçues après login:', data);
-      
+
       if (response.ok && data?.id) {
         console.log('✅ Connexion réussie, stockage des infos utilisateur:', data);
         const loginSuccess = await login({
@@ -47,32 +49,30 @@ export const LoginComponent = () => {
           roles: data.roles,
           isAuthenticated: true
         }, rememberMe); // Ajout de l'option rememberMe
-
         if (loginSuccess) {
           console.log("✅ Utilisateur stocké dans le contexte:", data);
           navigate('/');
         }
       } else {
         console.error('❌ Erreur de connexion:', data?.error || 'Réponse invalide');
+        setErrorMessage(data?.error || 'Une erreur est survenue lors de la connexion');
       }
     } catch (error) {
       console.error('⚠️ Erreur réseau ou serveur:', error);
+      setErrorMessage('Une erreur est survenue lors de la connexion');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50/50">
-      <div className="w-full max-w-md">
-        <form 
-          onSubmit={handleSubmit}
-          className="bg-white shadow-lg rounded-xl p-8 space-y-6 border border-gray-100 hover:border-gray-200 transition-all duration-300"
-        >
-          <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
             Connexion
           </h2>
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
             <div className="relative">
               <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
@@ -86,14 +86,13 @@ export const LoginComponent = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Votre email"
                   required
-                  className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Envelope size={19} color="#AFBACA" />
+                  <Mail size={19} color="#AFBACA" />
                 </div>
               </div>
             </div>
-
             {/* Password Input */}
             <div className="relative">
               <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
@@ -107,14 +106,13 @@ export const LoginComponent = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Votre mot de passe"
                   required
-                  className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock size={19} color="#AFBACA" />
                 </div>
               </div>
             </div>
-
             {/* Remember Me Checkbox */}
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -129,24 +127,23 @@ export const LoginComponent = () => {
                   Se souvenir de moi
                 </label>
               </div>
-              <div className="text-sm">
-                <a href="/forgot-password" className="text-blue-600 hover:underline">
-                  Mot de passe oublié ?
-                </a>
-              </div>
             </div>
-
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl">
+                <p>{errorMessage}</p>
+              </div>
+            )}
             {/* Submit Button */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
-
             {/* Register Link */}
-            <div className="text-center mt-4">
+            <div className="text-center">
               <p className="text-sm text-gray-600">
                 Pas de compte ?{' '}
                 <a href="/register" className="text-blue-600 hover:underline transition duration-300">
@@ -154,10 +151,9 @@ export const LoginComponent = () => {
                 </a>
               </p>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
-  
   );
 };

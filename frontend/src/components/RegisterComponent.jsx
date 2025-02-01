@@ -1,9 +1,7 @@
 'use client';
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Envelope, Lock, User } from 'phosphor-react';
-import { Button, InputIcon, Input, Label } from 'keep-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const RegisterComponent = () => {
@@ -32,22 +30,18 @@ export const RegisterComponent = () => {
       toast.error('Veuillez saisir un email valide');
       return false;
     }
-
     if (password.length < 8) {
       toast.error('Le mot de passe doit contenir au moins 8 caractères');
       return false;
     }
-
     if (!firstName.trim()) {
       toast.error('Veuillez saisir votre prénom');
       return false;
     }
-
     if (!lastName.trim()) {
       toast.error('Veuillez saisir votre nom');
       return false;
     }
-
     return true;
   };
 
@@ -55,13 +49,13 @@ export const RegisterComponent = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage('');
-  
+
     // Client-side validation
     if (!validateForm()) {
       setLoading(false);
       return;
     }
-  
+
     try {
       const response = await fetch(
         'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/register',
@@ -74,11 +68,11 @@ export const RegisterComponent = () => {
           body: JSON.stringify(formData),
         }
       );
-  
+
       // Récupérer le texte de la réponse pour débogage
       const responseText = await response.text();
       console.log('Response text:', responseText);
-  
+
       // Essayez de parser le JSON
       let data;
       try {
@@ -89,7 +83,7 @@ export const RegisterComponent = () => {
         setLoading(false);
         return;
       }
-  
+
       if (response.ok) {
         // Display success toast
         toast.success('Inscription réussie');
@@ -111,129 +105,124 @@ export const RegisterComponent = () => {
       setLoading(false);
     }
   };
-  
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md">
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 rounded-xl bg-white p-8 shadow-lg"
-        >
-          <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
             Inscription
           </h2>
-
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* First Name Input */}
-            <fieldset className="space-y-2">
-              <Label htmlFor="firstName">Prénom</Label>
+            <div className="relative">
+              <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-700">
+                Prénom
+              </label>
               <div className="relative">
-                <Input
+                <input
                   id="firstName"
                   name="firstName"
                   type="text"
                   placeholder="Votre prénom"
-                  className="ps-11 w-full"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
                   value={formData.firstName}
                   onChange={handleChange}
                   required
                 />
-                <InputIcon>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User size={19} color="#AFBACA" />
-                </InputIcon>
+                </div>
               </div>
-            </fieldset>
-
+            </div>
             {/* Last Name Input */}
-            <fieldset className="space-y-2">
-              <Label htmlFor="lastName">Nom</Label>
+            <div className="relative">
+              <label htmlFor="lastName" className="block mb-2 text-sm font-medium text-gray-700">
+                Nom
+              </label>
               <div className="relative">
-                <Input
+                <input
                   id="lastName"
                   name="lastName"
                   type="text"
                   placeholder="Votre nom"
-                  className="ps-11 w-full"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
                   value={formData.lastName}
                   onChange={handleChange}
                   required
                 />
-                <InputIcon>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User size={19} color="#AFBACA" />
-                </InputIcon>
+                </div>
               </div>
-            </fieldset>
-
+            </div>
             {/* Email Input */}
-            <fieldset className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
+                Email
+              </label>
               <div className="relative">
-                <Input
+                <input
                   id="email"
                   name="email"
                   type="email"
                   placeholder="Votre email"
-                  className="ps-11 w-full"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
                   value={formData.email}
                   onChange={handleChange}
                   required
                 />
-                <InputIcon>
-                  <Envelope size={19} color="#AFBACA" />
-                </InputIcon>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail size={19} color="#AFBACA" />
+                </div>
               </div>
-            </fieldset>
-
+            </div>
             {/* Password Input */}
-            <fieldset className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+            <div className="relative">
+              <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
+                Mot de passe
+              </label>
               <div className="relative">
-                <Input
+                <input
                   id="password"
                   name="password"
                   type="password"
                   placeholder="Votre mot de passe"
-                  className="ps-11 w-full"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
                   value={formData.password}
                   onChange={handleChange}
                   required
                 />
-                <InputIcon>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock size={19} color="#AFBACA" />
-                </InputIcon>
+                </div>
               </div>
-            </fieldset>
-          </div>
-
-          {/* Error Message */}
-          {errorMessage && (
-            <div className="rounded-md bg-red-50 p-3">
-              <p className="text-sm text-red-600">{errorMessage}</p>
             </div>
-          )}
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? 'Inscription en cours...' : 'S\'inscrire'}
-          </Button>
-
-          {/* Login Link */}
-          <div className="text-center mt-4">
-            <p className="text-sm text-gray-600">
-              Vous avez déjà un compte ?{' '}
-              <a 
-                href="/login" 
-                className="text-blue-600 hover:underline"
-              >
-                Connectez-vous
-              </a>
-            </p>
-          </div>
-        </form>
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl">
+                <p>{errorMessage}</p>
+              </div>
+            )}
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Inscription en cours...' : 'S\'inscrire'}
+            </button>
+            {/* Login Link */}
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Vous avez déjà un compte ?{' '}
+                <a href="/login" className="text-blue-600 hover:underline transition duration-300">
+                  Connectez-vous
+                </a>
+              </p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
