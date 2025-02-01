@@ -40,39 +40,35 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    public function login(Request $request, Security $security, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): JsonResponse
-    {
+    public function login(
+        Request $request, 
+        Security $security, 
+        UserPasswordHasherInterface $passwordHasher, 
+        EntityManagerInterface $em
+    ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
-
+    
         $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-
+    
         if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
             return new JsonResponse(['error' => 'Email ou mot de passe incorrect'], 401);
         }
-
-        // Si l'authentification réussit
-        $userData = [
+    
+        // Création de la session Symfony
+        $request->getSession()->set('user_id', $user->getId());
+    
+        return new JsonResponse([
             'message' => 'Connexion réussie',
             'id' => $user->getId(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
             'email' => $user->getEmail(),
             'roles' => $user->getRoles()
-        ];
-
-        // Créer la session
-        if (!$request->getSession()) {
-            $request->setSession(new Session());
-        }
-        
-        $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        $security->getToken()->setToken($token);
-        $request->getSession()->set(Security::LAST_USERNAME, $email);
-
-        return new JsonResponse($userData);
+        ]);
     }
+    
 
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(
@@ -146,9 +142,16 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/check-auth', name: 'api_check_auth', methods: ['GET'])]
-    public function checkAuth(Security $security): JsonResponse
+    public function checkAuth(Request $request, EntityManagerInterface $em): JsonResponse
     {
-    $user = $security->getUser();
+    $session = $request->getSession();
+    $userId = $session->get('user_id');
+
+    if (!$userId) {
+        return new JsonResponse(['authenticated' => false], 401);
+    }
+
+    $user = $em->getRepository(User::class)->find($userId);
 
     if (!$user) {
         return new JsonResponse(['authenticated' => false], 401);
@@ -241,7 +244,7 @@ class ApiController extends AbstractController
             ], 500);
         }
     }
-    
+        
     
     
     

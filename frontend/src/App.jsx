@@ -8,7 +8,9 @@ import { RegisterComponent } from './components/RegisterComponent';
 import ProductCard from './pages/ProductCard';
 import StripeCart from './components/Cart';
 import { CartProvider } from './components/CartContext';
-import PannierComponent from './components/PannierComponent';
+import PannierPages from './pages/PannierPages';
+import  ProfilePage  from './pages/ProfilePages';
+import StripeCheckout from './components/Cart';
 
  
 function App() {
@@ -22,7 +24,9 @@ function App() {
             <Route path="/register" element={<RegisterComponent />} />
             <Route path="/productcard" element={<ProductCard />} />
             <Route path="/cart" element={<StripeCart />} />
-            <Route path="/panniercomponent" element={<PannierComponent />} />
+            <Route path="/pannier" element={<PannierPages />} />
+            <Route path="/profile" element={<ProfilePage />} />
+
           </Routes>
         </BrowserRouter>
       </CartProvider>

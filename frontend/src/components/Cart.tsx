@@ -1,54 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { 
-  Elements, 
-  CardElement, 
-  useStripe, 
-  useElements 
-} from '@stripe/react-stripe-js';
-import { useCart } from './CartContext';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useCart } from '../components/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { NavbarComponent } from '../components/NavBarComponents';
+import { Package, CreditCard, Mail, User, Home, Check, AlertCircle } from 'lucide-react';
 
 const stripePromise = loadStripe('pk_test_51QmzOTIE3DEUnxOz4D7vaYyWg2lCUfqlBuhyZr1mSPRUpWuEexP3XSBmnw1fOSBLQVUAv4YpS4KxdRbaof3FHXqf00uhvSiyP4');
 
-const CheckoutPage = () => {
-  const { cart, getCartTotal } = useCart();
-  
-  return (
-    <div className="flex justify-center items-start p-8 bg-gray-100 min-h-screen">
-      <div className="w-full max-w-6xl bg-white rounded-lg shadow-lg flex">
-        <OrderSummary cart={cart} total={getCartTotal()} />
-        <PaymentForm total={getCartTotal()} cart={cart} />
-      </div>
+const ProductItem = ({ item }) => (
+  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+    <div className="relative w-16 h-16 overflow-hidden rounded-lg">
+      <img
+        src={item.image}
+        alt={item.name}
+        className="w-full h-full object-cover"
+      />
     </div>
-  );
-};
+    <div className="flex-grow">
+      <h3 className="font-medium text-gray-800">{item.name}</h3>
+      <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+    </div>
+    <p className="font-medium text-gray-900">{(item.price * item.quantity).toFixed(2)} €</p>
+  </div>
+);
 
 const OrderSummary = ({ cart, total }) => (
-  <div className="w-1/2 p-8 border-r">
-    <h2 className="text-2xl font-bold mb-6">Résumé de la commande</h2>
-    {cart.map(item => (
-      <div key={item.id} className="flex justify-between mb-4">
-        <div>
-          <p className="font-semibold">{item.name}</p>
-          <p className="text-sm text-gray-600">Qté: {item.quantity}</p>
-        </div>
-        <p>{(item.price * item.quantity).toFixed(2)} €</p>
+  <div className="p-6 bg-white rounded-2xl shadow-lg">
+    <div className="flex items-center gap-2 mb-6">
+      <Package className="text-gray-600" size={24} />
+      <h2 className="text-2xl font-bold text-gray-800">Résumé de la commande</h2>
+    </div>
+    
+    <div className="space-y-4 mb-6">
+      {cart.map(item => (
+        <ProductItem key={item.id} item={item} />
+      ))}
+    </div>
+
+    <div className="space-y-3 pt-4 border-t border-gray-200">
+      <div className="flex justify-between text-gray-600">
+        <span>Sous-total</span>
+        <span>{total.toFixed(2)} €</span>
       </div>
-    ))}
-    <div className="border-t mt-4 pt-4">
-      <div className="flex justify-between">
-        <p>Sous-total</p>
-        <p>{total.toFixed(2)} €</p>
+      <div className="flex justify-between text-gray-600">
+        <span>Livraison</span>
+        <span className="text-green-500 font-medium">Gratuite</span>
       </div>
-      <div className="flex justify-between mt-2">
-        <p>Livraison</p>
-        <p>Gratuit</p>
-      </div>
-      <div className="flex justify-between mt-4 font-bold">
-        <p>Total</p>
-        <p>{total.toFixed(2)} €</p>
+      <div className="h-px bg-gray-200"></div>
+      <div className="flex justify-between text-lg font-bold text-gray-800">
+        <span>Total</span>
+        <span>{total.toFixed(2)} €</span>
       </div>
     </div>
   </div>
@@ -62,16 +65,13 @@ const PaymentForm = ({ total, cart }) => {
   const [processing, setProcessing] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [prenom, setPrenom] = useState(''); // 🔹 Ajout du prénom
+  const [prenom, setPrenom] = useState('');
   const [address, setAddress] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
-    if (!stripe || !elements) {
-      return;
-    }
+    if (!stripe || !elements) return;
 
     setProcessing(true);
 
@@ -80,11 +80,9 @@ const PaymentForm = ({ total, cart }) => {
         type: 'card',
         card: elements.getElement(CardElement),
         billing_details: {
-          name: name,
+          name: `${prenom} ${name}`,
           email: email,
-          address: {
-            line1: address,
-          },
+          address: { line1: address },
         },
       });
 
@@ -94,9 +92,6 @@ const PaymentForm = ({ total, cart }) => {
         return;
       }
 
-      console.log('✅ Paiement validé !');
-
-      // **Envoi des données au backend après un paiement réussi**
       const orderData = {
         nom: name,
         prenom: prenom,
@@ -113,98 +108,177 @@ const PaymentForm = ({ total, cart }) => {
       });
 
       if (!orderResponse.ok) {
-        throw new Error('❌ Erreur lors de l\'enregistrement de la commande');
+        throw new Error('Erreur lors de l\'enregistrement de la commande');
       }
-
-      console.log('✅ Commande enregistrée en base de données !');
 
       setShowSuccessPopup(true);
       setTimeout(() => {
         setShowSuccessPopup(false);
-        navigate('/'); // Redirection vers la page d'accueil
+        navigate('/');
       }, 3000);
 
     } catch (err) {
       setError('Une erreur est survenue lors du traitement du paiement.');
-      setProcessing(false);
     }
+    setProcessing(false);
   };
 
+  const InputField = ({ icon: Icon, label, type, value, onChange, placeholder }) => (
+    <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon className="text-gray-400" size={20} />
+        </div>
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required
+          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all duration-300"
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="w-1/2 p-8">
-      <h2 className="text-2xl font-bold mb-6">Informations de paiement</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input 
-            type="email" 
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
-            required 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Nom</label>
-          <input 
-            type="text" 
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
-            required 
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Prénom</label> {/* 🔹 Ajout du champ prénom */}
-          <input 
-            type="text" 
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
-            required 
+    <div className="p-6 bg-white rounded-2xl shadow-lg">
+      <div className="flex items-center gap-2 mb-6">
+        <CreditCard className="text-gray-600" size={24} />
+        <h2 className="text-2xl font-bold text-gray-800">Informations de paiement</h2>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <InputField
+          icon={Mail}
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="votre@email.com"
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <InputField
+            icon={User}
+            label="Prénom"
+            type="text"
             value={prenom}
             onChange={(e) => setPrenom(e.target.value)}
+            placeholder="John"
+          />
+          <InputField
+            icon={User}
+            label="Nom"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Doe"
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Adresse</label>
-          <input 
-            type="text" 
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
-            required 
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
+
+        <InputField
+          icon={Home}
+          label="Adresse"
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="123 rue Example"
+        />
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Carte bancaire
+          </label>
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+            <CardElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                      color: '#aab7c4',
+                    },
+                  },
+                  invalid: {
+                    color: '#9e2146',
+                  },
+                },
+              }}
+            />
+          </div>
         </div>
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">Carte bancaire</label>
-          <CardElement className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3" />
-        </div>
-        {error && <div className="text-red-500 mb-4">{error}</div>}
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-2">
+            <AlertCircle size={20} />
+            <span>{error}</span>
+          </div>
+        )}
+
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           type="submit"
           disabled={!stripe || processing}
-          className="w-full bg-black text-white py-3 rounded-md font-medium"
+          className="w-full bg-gray-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {processing ? 'Traitement...' : `Payer ${total.toFixed(2)} €`}
+          <CreditCard size={20} />
+          <span>{processing ? 'Traitement...' : `Payer ${total.toFixed(2)} €`}</span>
         </motion.button>
       </form>
 
       <AnimatePresence>
         {showSuccessPopup && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           >
-            <div className="bg-white p-8 rounded-lg shadow-xl">
-              <h3 className="text-2xl font-bold text-green-600 mb-4">Paiement réussi !</h3>
-              <p>Vous allez être redirigé vers la page d'accueil...</p>
-            </div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full mx-4"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="text-green-500" size={32} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Paiement réussi !</h3>
+                <p className="text-gray-600">Merci pour votre commande. Vous allez être redirigé...</p>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
+
+const CheckoutPage = () => {
+  const { cart, getCartTotal } = useCart();
+  
+  useEffect(() => {
+    const preremplLink = document.querySelector('.Préremplir link');
+    if (preremplLink) {
+      preremplLink.remove();
+    }
+  }, []);
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <NavbarComponent />
+      <div className="container mx-auto px-4 py-12 pt-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8">
+            <OrderSummary cart={cart} total={getCartTotal()} />
+            <PaymentForm total={getCartTotal()} cart={cart} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

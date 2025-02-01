@@ -1,19 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart, Heart, Minus, Plus } from 'lucide-react';
+import { CartContext } from '../components/CartContext';
+import { NavbarComponent } from '../components/NavBarComponents';
 
-const Productcard = () => {
+const ProductCard = () => {
   const location = useLocation();
-  const { 
-    image, 
-    title, 
-    description, 
-    price 
-  } = location.state || {};
-
+  const { addToCart } = useContext(CartContext);
+  const { id, image, title, description, price } = location.state || {};
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
-
+  const [isLiked, setIsLiked] = useState(false);
   const sizes = ['XS', 'S', 'M', 'L', 'XL'];
 
   const handleQuantityChange = (change) => {
@@ -25,7 +22,15 @@ const Productcard = () => {
       alert('Veuillez sélectionner une taille');
       return;
     }
-    alert(`Ajouté au panier : ${title}, Quantité : ${quantity}, Taille : ${selectedSize}`);
+    
+    addToCart({
+      id,
+      name: title,
+      price: price,
+      image: image,
+      quantity: quantity,
+      size: selectedSize
+    });
   };
 
   if (!image) {
@@ -33,84 +38,100 @@ const Productcard = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Image */}
-        <div className="relative">
-          <img 
-            src={image} 
-            alt={title} 
-            className="w-full h-auto object-cover rounded-lg shadow-lg"
-          />
-          <button 
-            className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
-            aria-label="Ajouter aux favoris"
-          >
-            <Heart className="text-red-500" />
-          </button>
-        </div>
-
-        {/* Détails du produit */}
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{title}</h1>
-          <p className="text-gray-600 mb-6">{description}</p>
-
-          <div className="mb-6">
-            <p className="text-4xl font-bold text-gray-900">{price.toFixed(2)} €</p>
-          </div>
-
-          {/* Sélection de taille */}
-          <div className="mb-6">
-            <p className="font-semibold mb-2">Taille :</p>
-            <div className="flex space-x-2">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`px-4 py-2 border rounded-md ${
-                    selectedSize === size 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+    <div className="min-h-screen bg-gray-50">
+      <NavbarComponent /><br /><br />
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-2 gap-12 bg-white rounded-2xl shadow-lg p-8">
+          {/* Image Section */}
+          <div className="relative group">
+            <div className="overflow-hidden rounded-xl">
+              <img 
+                src={image} 
+                alt={title} 
+                className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
+              />
             </div>
+            <button 
+              onClick={() => setIsLiked(!isLiked)}
+              className="absolute top-4 right-4 bg-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              aria-label="Ajouter aux favoris"
+            >
+              <Heart 
+                className={`transition-colors duration-300 ${
+                  isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                }`} 
+                size={20}
+              />
+            </button>
           </div>
 
-          {/* Sélection de quantité */}
-          <div className="mb-6">
-            <p className="font-semibold mb-2">Quantité :</p>
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => handleQuantityChange(-1)}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
-              >
-                -
-              </button>
-              <span className="px-4">{quantity}</span>
-              <button 
-                onClick={() => handleQuantityChange(1)}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
-              >
-                +
-              </button>
+          {/* Product Details Section */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800 mb-4">{title}</h1>
+              <p className="text-gray-600 mb-8 leading-relaxed">{description}</p>
+              <div className="mb-8">
+                <p className="text-5xl font-bold text-gray-900 tracking-tight">
+                  {price.toFixed(2)} €
+                </p>
+              </div>
+
+              {/* Size Selection */}
+              <div className="mb-8">
+                <p className="text-gray-700 font-medium mb-3">Taille</p>
+                <div className="flex flex-wrap gap-3">
+                  {sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-6 py-3 rounded-lg transition-all duration-300 transform hover:-translate-y-1 ${
+                        selectedSize === size 
+                          ? 'bg-gray-900 text-white shadow-lg' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quantity Selection */}
+              <div className="mb-8">
+                <p className="text-gray-700 font-medium mb-3">Quantité</p>
+                <div className="flex items-center space-x-4 bg-gray-100 w-fit rounded-lg p-2">
+                  <button 
+                    onClick={() => handleQuantityChange(-1)}
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors duration-300"
+                  >
+                    <Minus size={20} className="text-gray-600" />
+                  </button>
+                  <span className="w-12 text-center font-medium text-gray-800">
+                    {quantity}
+                  </span>
+                  <button 
+                    onClick={() => handleQuantityChange(1)}
+                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors duration-300"
+                  >
+                    <Plus size={20} className="text-gray-600" />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Bouton Ajouter au panier */}
-          <button 
-            onClick={handleAddToCart}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center"
-          >
-            <ShoppingCart className="mr-2" />
-            Ajouter au panier
-          </button>
+            {/* Add to Cart Button */}
+            <button 
+              onClick={handleAddToCart}
+              className="w-full bg-gray-900 text-white py-4 rounded-xl hover:bg-gray-800 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex items-center justify-center space-x-2"
+            >
+              <ShoppingCart className="mr-2" size={20} />
+              <span>Ajouter au panier</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Productcard;
+export default ProductCard;

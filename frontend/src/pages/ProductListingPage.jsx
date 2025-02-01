@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart, Grid, List } from 'lucide-react';
+import { 
+  ShoppingCart, 
+  Heart, 
+  Grid, 
+  List, 
+  Search,
+  SlidersHorizontal,
+  ChevronDown,
+  X
+} from 'lucide-react';
 import { CartContext } from '../components/CartContext';
 
 const ProductListingPage = () => {
@@ -9,6 +18,7 @@ const ProductListingPage = () => {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     minPrice: '',
@@ -16,21 +26,18 @@ const ProductListingPage = () => {
   });
   const [sortBy, setSortBy] = useState('default');
   const [search, setSearch] = useState('');
+  const [favorites, setFavorites] = useState(new Set());
 
-  // Récupération des produits depuis l'API
   useEffect(() => {
     fetch("http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/product")
       .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP ! statut : ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
       })
-      .then((data) => setProducts(data))
+      .then(setProducts)
       .catch((error) => setError(error.message));
   }, []);
 
-  // Fonction pour naviguer vers la page de détail du produit
   const handleProductClick = (product) => {
     navigate('/Productcard', { 
       state: { 
@@ -43,9 +50,8 @@ const ProductListingPage = () => {
     });
   };
 
-  // Fonction pour ajouter au panier
-  const handleAddToCart = (product) => {
-    // Ajout au panier avec toutes les informations nécessaires
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation();
     addToCart({
       id: product.id,
       name: product.name,
@@ -55,144 +61,191 @@ const ProductListingPage = () => {
     });
   };
 
-  // Fonction pour filtrer et trier les produits
+  const toggleFavorite = (productId, e) => {
+    e.stopPropagation();
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(productId)) {
+        newFavorites.delete(productId);
+      } else {
+        newFavorites.add(productId);
+      }
+      return newFavorites;
+    });
+  };
+
   const processedProducts = products
     .filter(product => {
-      // Filtrage par recherche
       const matchSearch = product.name.toLowerCase().includes(search.toLowerCase());
-      
-      // Filtrage par catégorie
       const matchCategory = !filters.category || product.category === filters.category;
-      
-      // Filtrage par prix
       const matchMinPrice = !filters.minPrice || product.price >= parseFloat(filters.minPrice);
       const matchMaxPrice = !filters.maxPrice || product.price <= parseFloat(filters.maxPrice);
-      
       return matchSearch && matchCategory && matchMinPrice && matchMaxPrice;
     })
     .sort((a, b) => {
       switch(sortBy) {
-        case 'priceAsc':
-          return a.price - b.price;
-        case 'priceDesc':
-          return b.price - a.price;
-        case 'nameAsc':
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
+        case 'priceAsc': return a.price - b.price;
+        case 'priceDesc': return b.price - a.price;
+        case 'nameAsc': return a.name.localeCompare(b.name);
+        default: return 0;
       }
     });
 
-  // Gestion des erreurs de chargement
   if (error) {
-    return <div className="text-center text-red-600 py-8">Erreur de chargement : {error}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <X className="mx-auto text-red-500 mb-4" size={48} />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Erreur de chargement</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Titre et filtres */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Notre Collection</h1>
-        
-        <div className="flex items-center space-x-4">
-          {/* Recherche */}
-          <input 
-            type="text"
-            placeholder="Rechercher un produit"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="p-2 border rounded"
-          />
-
-          {/* Sélecteur de mode d'affichage */}
-          <div className="flex space-x-2">
-            <button 
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              <Grid />
-            </button>
-            <button 
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            >
-              <List />
-            </button>
-          </div>
-
-          {/* Filtres et tri */}
-          <select 
-            onChange={(e) => setSortBy(e.target.value)}
-            className="p-2 border rounded"
-          >
-            <option value="default">Trier par défaut</option>
-            <option value="priceAsc">Prix : Croissant</option>
-            <option value="priceDesc">Prix : Décroissant</option>
-            <option value="nameAsc">Nom : A-Z</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Grille ou liste de produits */}
-      <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1'}`}>
-        {processedProducts.map(product => (
-          <div 
-            key={product.id} 
-            className={`bg-white shadow-lg rounded-lg overflow-hidden cursor-pointer hover:shadow-xl transition-shadow ${
-              viewMode === 'list' ? 'flex items-center' : ''
-            }`}
-            onClick={() => handleProductClick(product)}
-          >
-            <div className={`${viewMode === 'list' ? 'w-1/3 p-4' : 'w-full'}`}>
-              <img 
-                src={`http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`}
-                alt={product.name} 
-                className="w-full h-auto object-cover"
-              />
-            </div>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-800">Notre Collection</h1>
             
-            <div className={`p-4 ${viewMode === 'list' ? 'w-2/3' : ''}`}>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-xl font-semibold">{product.name}</h2>
-                  <p className="text-gray-600 text-sm">{product.description}</p>
-                </div>
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <input 
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 w-full md:w-64"
+                />
+                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
                 <button 
-                  className="text-gray-500 hover:text-red-500"
-                  aria-label="Ajouter aux favoris"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-all duration-300 ${
+                    viewMode === 'grid' 
+                      ? 'bg-white text-gray-800 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
                 >
-                  <Heart className="w-6 h-6" />
+                  <Grid size={20} />
+                </button>
+                <button 
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-lg transition-all duration-300 ${
+                    viewMode === 'list' 
+                      ? 'bg-white text-gray-800 shadow-sm' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <List size={20} />
                 </button>
               </div>
 
-              <div className="mt-4">
-                <p className="text-2xl font-bold text-gray-900">{parseFloat(product.price).toFixed(2)} €</p>
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <select 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none bg-gray-50 border border-gray-200 rounded-xl py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                >
+                  <option value="default">Trier par défaut</option>
+                  <option value="priceAsc">Prix croissant</option>
+                  <option value="priceDesc">Prix décroissant</option>
+                  <option value="nameAsc">Nom A-Z</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" size={20} />
               </div>
 
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart(product);
-                }}
-                className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center"
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300"
               >
-                <ShoppingCart className="mr-2" />
-                Ajouter au panier
+                <SlidersHorizontal size={20} />
+                Filtres
               </button>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Message si aucun produit */}
-      {processedProducts.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-600">Aucun produit trouvé</p>
+          
+          {/* Filters Panel */}
+          {isFilterOpen && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              {/* Add your filter controls here */}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Products Grid/List */}
+        <div className={`grid gap-6 ${
+          viewMode === 'grid' 
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+            : 'grid-cols-1'
+        }`}>
+          {processedProducts.map(product => (
+            <div 
+              key={product.id}
+              onClick={() => handleProductClick(product)}
+              className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                viewMode === 'list' ? 'flex' : ''
+              }`}
+            >
+              <div className={`relative ${viewMode === 'list' ? 'w-1/3' : ''}`}>
+                <img 
+                  src={`http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`}
+                  alt={product.name}
+                  className="w-full h-full object-cover aspect-square"
+                />
+                <button 
+                  onClick={(e) => toggleFavorite(product.id, e)}
+                  className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Heart 
+                    className={`transition-colors duration-300 ${
+                      favorites.has(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                    }`}
+                    size={20}
+                  />
+                </button>
+              </div>
+
+              <div className={`p-6 ${viewMode === 'list' ? 'w-2/3' : ''}`}>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h2>
+                <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">
+                    {parseFloat(product.price).toFixed(2)} €
+                  </p>
+                  <button 
+                    onClick={(e) => handleAddToCart(product, e)}
+                    className="bg-gray-900 text-white p-2 rounded-xl hover:bg-gray-800 transition-colors duration-300"
+                  >
+                    <ShoppingCart size={20} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {processedProducts.length === 0 && (
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <Search className="mx-auto text-gray-400 mb-4" size={48} />
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Aucun produit trouvé
+            </h2>
+            <p className="text-gray-600">
+              Essayez de modifier vos filtres ou votre recherche
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
