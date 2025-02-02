@@ -1,10 +1,7 @@
-// src/pages/PannierPages.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import { NavbarComponent } from '../components/NavBarComponents';
-
-// Icons
 import { 
   Trash2, 
   Plus, 
@@ -38,22 +35,21 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => (
       <div className="flex flex-row sm:flex-col justify-between sm:justify-start items-center gap-3 mt-4 sm:mt-0">
         <div className="flex items-center bg-gray-100 rounded-lg p-1">
           <button 
-            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1), item.size)}
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors duration-300"
           >
             <Minus size={16} className="text-gray-600" />
           </button>
           <span className="w-8 text-center font-medium">{item.quantity}</span>
           <button 
-            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            onClick={() => updateQuantity(item.id, item.quantity + 1, item.size)}
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors duration-300"
           >
             <Plus size={16} className="text-gray-600" />
           </button>
         </div>
-
         <button 
-          onClick={() => removeFromCart(item.id)}
+          onClick={() => removeFromCart(item.id, item.size)}
           className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-300"
         >
           <Trash2 size={20} />
@@ -82,7 +78,6 @@ const CartSummary = ({ total, onCheckout }) => (
         <span>{total.toFixed(2)} €</span>
       </div>
     </div>
-
     <button 
       onClick={onCheckout}
       className="w-full bg-gray-900 text-white py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
@@ -112,9 +107,12 @@ const PannierPages = () => {
   const navigate = useNavigate();
 
   const handleCheckout = () => {
-    // Ici vous pouvez rediriger vers votre page de paiement
+    // Redirection vers la page de paiement
     navigate('/cart');
   };
+
+  // Calculer le nombre total d'articles (en tenant compte des quantités)
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   if (cart.length === 0) {
     return (
@@ -137,15 +135,14 @@ const PannierPages = () => {
               Votre Panier
             </h1>
             <span className="text-gray-500">
-              {cart.length} article{cart.length > 1 ? 's' : ''}
+              {totalItems} article{totalItems > 1 ? 's' : ''}
             </span>
           </div>
-
           <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
             <div className="md:col-span-2 space-y-4 sm:space-y-6">
               {cart.map(item => (
                 <CartItem 
-                  key={item.id}
+                  key={`${item.id}-${item.size}`}
                   item={item}
                   updateQuantity={updateQuantity}
                   removeFromCart={removeFromCart}

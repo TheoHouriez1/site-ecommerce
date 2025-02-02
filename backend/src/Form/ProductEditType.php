@@ -3,7 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Product;
-use App\Entity\SubCategory;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -36,11 +35,6 @@ class ProductEditType extends AbstractType
                         'mimeTypesMessage' => "votre image de produit doit etre au format valide(png, jpg, jpeg)"
                     ])
                 ]
-            ])
-            ->add('subCategory', EntityType::class, [
-                'class' => SubCategory::class,
-                'choice_label' => 'name',
-                'multiple' => true,
             ])
         ;
     }

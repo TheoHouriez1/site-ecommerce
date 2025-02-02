@@ -15,30 +15,22 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['category:read', 'product:read', 'subcategory:read'])]
+    #[Groups(['category:read', 'product:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['category:read', 'product:read', 'subcategory:read'])]
+    #[Groups(['category:read', 'product:read'])]
     private ?string $name_category = null;
-
-    /**
-     * @var Collection<int, SubCategory>
-     */
-    #[ORM\OneToMany(mappedBy: 'Category', targetEntity: SubCategory::class)]
-    #[Groups(['category:read', 'product:read', 'subcategory:read'])]
-    private Collection $subCategories;
 
     /**
      * @var Collection<int, Product>
      */
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
-    #[Groups(['category:read', 'product:read', 'subcategory:read'])]
+    #[Groups(['category:read', 'product:read'])]
     private Collection $products;
 
     public function __construct()
     {
-        $this->subCategories = new ArrayCollection();
         $this->products = new ArrayCollection();
     }
 
@@ -55,36 +47,6 @@ class Category
     public function setNameCategory(string $name_category): static
     {
         $this->name_category = $name_category;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, SubCategory>
-     */
-    public function getSubCategories(): Collection
-    {
-        return $this->subCategories;
-    }
-
-    public function addSubCategory(SubCategory $subCategory): static
-    {
-        if (!$this->subCategories->contains($subCategory)) {
-            $this->subCategories->add($subCategory);
-            $subCategory->setCategory($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSubCategory(SubCategory $subCategory): static
-    {
-        if ($this->subCategories->removeElement($subCategory)) {
-            // set the owning side to null (unless already changed)
-            if ($subCategory->getCategory() === $this) {
-                $subCategory->setCategory(null);
-            }
-        }
 
         return $this;
     }

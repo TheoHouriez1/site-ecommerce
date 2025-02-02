@@ -1,23 +1,30 @@
 {{ form_start(form) }}
     <label for="">Nom du Produit</label><br>
     {{ form_widget(form.name,{attr:{'class':'form form-control'}}) }}<br>
-     <label for="">Description du Produit</label><br>
+
+    <label for="">Description du Produit</label><br>
     {{ form_widget(form.description,{attr:{'class':'form form-control'}}) }}<br>
+
     <label for="">Prix du Produit</label><br>
     {{ form_widget(form.price,{attr:{'class':'form form-control'}}) }}<br>
 
     {% if button_label != "Update" %}
-         <label for="">stock</label><br>
-    {{ form_widget(form.stock,{'attr':{'class':'form form-control'}}) }}<br>
+        <label for="">Stock</label><br>
+        {{ form_widget(form.stock,{'attr':{'class':'form form-control'}}) }}<br>
     {% endif %}
-    
-    <label for="">Sous catergories lié au Produit</label><br>
-    {{ form_widget(form.subCategory,{attr:{'class':'form form-control'}}) }}<br>
-     <label for="">image lié au Produit n1</label><br>
+
+    <label for="">Tailles disponibles</label>
+    {{ form_widget(form.sizes, {'attr': {'class': 'form form-control', 'placeholder': 'Format: ["S", "M", "L", "XL"]'}}) }}<br>
+
+    <label for="">Image lié au Produit n1</label><br>
     {{ form_widget(form.image,{attr:{'class':'form'}}) }}<br>
-        <label for="">image lié au Produit n2</label><br>
+
+    <label for="">Image lié au Produit n2</label><br>
     {{ form_widget(form.image2,{attr:{'class':'form'}}) }}<br>
-        <label for="">image lié au Produit n3</label><br>
+
+    <label for="">Image lié au Produit n3</label><br>
     {{ form_widget(form.image3,{attr:{'class':'form'}}) }}<br>
+
     <button class="btn btn-outline-primary">{{ button_label|default('Save') }}</button><br>
 {{ form_end(form) }}
+["Small","Big"]

@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Entity\SubCategory;
 use App\Entity\User;
 use App\Entity\Order;
 use Doctrine\ORM\EntityManagerInterface;

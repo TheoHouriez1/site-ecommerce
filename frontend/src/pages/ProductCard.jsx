@@ -7,11 +7,10 @@ import { NavbarComponent } from '../components/NavBarComponents';
 const ProductCard = () => {
   const location = useLocation();
   const { addToCart } = useContext(CartContext);
-  const { id, image, title, description, price } = location.state || {};
+  const { id, image, title, description, price, sizes } = location.state || {};
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [isLiked, setIsLiked] = useState(false);
-  const sizes = ['XS', 'S', 'M', 'L', 'XL'];
 
   const handleQuantityChange = (change) => {
     setQuantity(Math.max(1, quantity + change));
@@ -80,7 +79,7 @@ const ProductCard = () => {
               <div className="mb-8">
                 <p className="text-gray-700 font-medium mb-3">Taille</p>
                 <div className="flex flex-wrap gap-3">
-                  {sizes.map((size) => (
+                  {sizes && sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}

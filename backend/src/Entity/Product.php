@@ -30,14 +30,6 @@ class Product
     #[Groups(['product:read'])]
     private ?int $price = null;
 
-    /**
-     * @var Collection<int, SubCategory>
-     */
-    #[ORM\ManyToMany(targetEntity: SubCategory::class, inversedBy: 'products')]
-    #[Groups(['product:read'])]
-    #[MaxDepth(1)] 
-    private Collection $subCategory;
-
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['product:read'])]
     private ?string $image = null;
@@ -45,6 +37,10 @@ class Product
     #[ORM\Column]
     #[Groups(['product:read'])]
     private ?int $stock = null;
+
+    #[ORM\Column(type: 'json')]
+    #[Groups(['product:read'])]
+    private array $sizes = [];
 
     /**
      * @var Collection<int, AddProductHistory>
@@ -62,8 +58,8 @@ class Product
 
     public function __construct()
     {
-        $this->subCategory = new ArrayCollection();
         $this->addProductHistories = new ArrayCollection();
+        $this->sizes = [];
     }
 
     public function getId(): ?int
@@ -107,30 +103,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, SubCategory>
-     */
-    public function getSubCategory(): Collection
-    {
-        return $this->subCategory;
-    }
-
-    public function addSubCategory(SubCategory $subCategory): static
-    {
-        if (!$this->subCategory->contains($subCategory)) {
-            $this->subCategory->add($subCategory);
-        }
-
-        return $this;
-    }
-
-    public function removeSubCategory(SubCategory $subCategory): static
-    {
-        $this->subCategory->removeElement($subCategory);
-
-        return $this;
-    }
-
     public function getImage(): ?string
     {
         return $this->image;
@@ -155,57 +127,14 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, AddProductHistory>
-     */
-    public function getAddProductHistories(): Collection
+    public function getSizes(): array
     {
-        return $this->addProductHistories;
+        return $this->sizes;
     }
 
-    public function addAddProductHistory(AddProductHistory $addProductHistory): static
+    public function setSizes(array $sizes): static
     {
-        if (!$this->addProductHistories->contains($addProductHistory)) {
-            $this->addProductHistories->add($addProductHistory);
-            $addProductHistory->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAddProductHistory(AddProductHistory $addProductHistory): static
-    {
-        if ($this->addProductHistories->removeElement($addProductHistory)) {
-            // Set the owning side to null (unless already changed)
-            if ($addProductHistory->getProduct() === $this) {
-                $addProductHistory->setProduct(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getImage2(): ?string
-    {
-        return $this->image2;
-    }
-
-    public function setImage2(?string $image2): static
-    {
-        $this->image2 = $image2;
-
-        return $this;
-    }
-
-    public function getImage3(): ?string
-    {
-        return $this->image3;
-    }
-
-    public function setImage3(?string $image3): static
-    {
-        $this->image3 = $image3;
-
+        $this->sizes = $sizes;
         return $this;
     }
 }

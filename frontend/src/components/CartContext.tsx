@@ -7,14 +7,15 @@ interface CartProduct {
   price: number;
   image: string;
   quantity: number;
+  size?: string; // Ajout de la taille comme propriété optionnelle
 }
 
 // Interface pour le contexte du panier
 interface CartContextType {
   cart: CartProduct[];
   addToCart: (product: CartProduct) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeFromCart: (productId: number, size?: string) => void;
+  updateQuantity: (productId: number, quantity: number, size?: string) => void;
   clearCart: () => void;
   getCartTotal: () => number;
 }
@@ -45,35 +46,51 @@ export const CartProvider: React.FC<{children: React.ReactNode}> = ({ children }
   // Ajouter un produit au panier
   const addToCart = (product: CartProduct) => {
     setCart(currentCart => {
-      const existingProductIndex = currentCart.findIndex(item => item.id === product.id);
+      const existingProductIndex = currentCart.findIndex(
+        item => item.id === product.id && item.size === product.size
+      );
       
       if (existingProductIndex > -1) {
-        // Si le produit existe, augmenter la quantité
+        // Si le produit existe avec la même taille, augmenter la quantité
         const updatedCart = [...currentCart];
-        updatedCart[existingProductIndex].quantity += 1;
+        updatedCart[existingProductIndex].quantity += product.quantity;
         return updatedCart;
       }
       
       // Ajouter un nouveau produit
-      return [...currentCart, {...product, quantity: 1}];
+      return [...currentCart, product];
     });
   };
 
   // Supprimer un produit du panier
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = (productId: number, size?: string) => {
     setCart(currentCart => 
-      currentCart.filter(item => item.id !== productId)
+      currentCart.filter(item => {
+        if (size) {
+          // Si une taille est spécifiée, supprimer uniquement le produit avec cette taille
+          return !(item.id === productId && item.size === size);
+        }
+        // Sinon, supprimer toutes les variantes du produit
+        return item.id !== productId;
+      })
     );
   };
 
   // Mettre à jour la quantité
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: number, quantity: number, size?: string) => {
     setCart(currentCart => 
-      currentCart.map(item => 
-        item.id === productId 
+      currentCart.map(item => {
+        if (size) {
+          // Si une taille est spécifiée, mettre à jour uniquement le produit avec cette taille
+          return (item.id === productId && item.size === size)
+            ? {...item, quantity: Math.max(0, quantity)}
+            : item;
+        }
+        // Sinon, mettre à jour toutes les variantes du produit
+        return item.id === productId
           ? {...item, quantity: Math.max(0, quantity)}
-          : item
-      ).filter(item => item.quantity > 0)
+          : item;
+      }).filter(item => item.quantity > 0)
     );
   };
 

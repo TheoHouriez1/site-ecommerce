@@ -5,7 +5,15 @@ import { useCart } from '../components/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { NavbarComponent } from '../components/NavBarComponents';
-import { Package, CreditCard, Mail, User, Home, Check, AlertCircle } from 'lucide-react';
+import { 
+  Package, 
+  CreditCard, 
+  Mail, 
+  User, 
+  Home, 
+  Check, 
+  AlertCircle 
+} from 'lucide-react';
 
 const stripePromise = loadStripe('pk_test_51QmzOTIE3DEUnxOz4D7vaYyWg2lCUfqlBuhyZr1mSPRUpWuEexP3XSBmnw1fOSBLQVUAv4YpS4KxdRbaof3FHXqf00uhvSiyP4');
 
@@ -20,7 +28,10 @@ const ProductItem = ({ item }) => (
     </div>
     <div className="flex-grow">
       <h3 className="font-medium text-gray-800">{item.name}</h3>
-      <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+      <div className="text-sm text-gray-500">
+        <p>Quantité: {item.quantity}</p>
+        {item.size && <p>Taille: {item.size}</p>}
+      </div>
     </div>
     <p className="font-medium text-gray-900">{(item.price * item.quantity).toFixed(2)} €</p>
   </div>
@@ -35,10 +46,9 @@ const OrderSummary = ({ cart, total }) => (
     
     <div className="space-y-4 mb-6">
       {cart.map(item => (
-        <ProductItem key={item.id} item={item} />
+        <ProductItem key={`${item.id}-${item.size}`} item={item} />
       ))}
     </div>
-
     <div className="space-y-3 pt-4 border-t border-gray-200">
       <div className="flex justify-between text-gray-600">
         <span>Sous-total</span>
@@ -59,7 +69,6 @@ const OrderSummary = ({ cart, total }) => (
 
 const InputField = ({ icon: Icon, label, type, value, onChange, placeholder }) => {
   const handleChange = (e) => {
-    // Prevent default behavior from interfering with input
     e.persist();
     onChange(e);
   };
@@ -99,7 +108,6 @@ const PaymentForm = ({ total, cart }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!stripe || !elements) return;
-
     setProcessing(true);
 
     try {
@@ -124,7 +132,7 @@ const PaymentForm = ({ total, cart }) => {
         prenom: prenom,
         email: email,
         address: address,
-        article: cart.map(item => `${item.quantity},${item.name}`).join(';'),
+        article: cart.map(item => `${item.quantity},${item.name},${item.size || 'NS'}`).join(';'),
         price: total
       };
 

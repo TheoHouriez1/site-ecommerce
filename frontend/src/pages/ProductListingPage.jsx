@@ -45,7 +45,8 @@ const ProductListingPage = () => {
         image: `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`,
         title: product.name,
         description: product.description,
-        price: parseFloat(product.price)
+        price: parseFloat(product.price),
+        sizes: product.sizes
       } 
     });
   };
@@ -57,7 +58,8 @@ const ProductListingPage = () => {
       name: product.name,
       price: parseFloat(product.price),
       image: `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`,
-      quantity: 1
+      quantity: 1,
+      sizes: product.sizes
     });
   };
 
@@ -110,7 +112,7 @@ const ProductListingPage = () => {
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h1 className="text-3xl font-bold text-gray-800">Notre Collection</h1>
-            
+
             <div className="flex flex-wrap items-center gap-4">
               {/* Search Bar */}
               <div className="relative">
@@ -172,7 +174,7 @@ const ProductListingPage = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Filters Panel */}
           {isFilterOpen && (
             <div className="mt-6 pt-6 border-t border-gray-200">
@@ -213,10 +215,22 @@ const ProductListingPage = () => {
                   />
                 </button>
               </div>
-
               <div className={`p-6 ${viewMode === 'list' ? 'w-2/3' : ''}`}>
                 <h2 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h2>
-                <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
+                <p className="text-gray-600 mb-2 line-clamp-2">{product.description}</p>
+                
+                {/* Tailles disponibles */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {product.sizes && product.sizes.map((size) => (
+                    <span 
+                      key={size} 
+                      className="px-2 py-1 text-sm bg-gray-100 rounded-lg text-gray-700"
+                    >
+                      {size}
+                    </span>
+                  ))}
+                </div>
+
                 <div className="flex items-center justify-between">
                   <p className="text-2xl font-bold text-gray-900">
                     {parseFloat(product.price).toFixed(2)} €
