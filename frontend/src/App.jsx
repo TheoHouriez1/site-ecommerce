@@ -13,8 +13,8 @@ const basename = "/theo/html/site-ecommerce/frontend/dist";
 
 function App() {
   return (
-    // <BrowserRouter basename={basename}>
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
+     {/* <BrowserRouter> */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginComponent />} />
