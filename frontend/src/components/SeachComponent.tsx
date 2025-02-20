@@ -17,7 +17,7 @@ const ProductCard = ({ item, onClick }) => (
   >
     <div className="relative w-full aspect-square bg-gray-100">
       <img
-        src={`http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${item.image}`}
+        src={`http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${item.image}`}
         alt={item.name}
         className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
       />
@@ -39,7 +39,7 @@ const SearchComponent: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
 
   useEffect(() => {
-    fetch("http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/product")
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -55,7 +55,7 @@ const SearchComponent: React.FC = () => {
     navigate('/productcard', { 
       state: { 
         id: product.id,
-        image: `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`,
+        image: `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}`,
         title: product.name,
         description: product.description,
         price: parseFloat(product.price)

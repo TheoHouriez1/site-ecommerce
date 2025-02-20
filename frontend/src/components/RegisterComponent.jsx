@@ -58,7 +58,7 @@ export const RegisterComponent = () => {
 
     try {
       const response = await fetch(
-        'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/register',
+        'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/register',
         {
           method: 'POST',
           headers: {
@@ -104,6 +104,10 @@ export const RegisterComponent = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLoginClick = () => {
+    navigate('/login');
   };
 
   return (
@@ -216,9 +220,12 @@ export const RegisterComponent = () => {
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Vous avez déjà un compte ?{' '}
-                <a href="/login" className="text-blue-600 hover:underline transition duration-300">
+                <button
+                  onClick={handleLoginClick}
+                  className="text-blue-600 hover:underline transition duration-300 cursor-pointer bg-transparent border-none p-0"
+                >
                   Connectez-vous
-                </a>
+                </button>
               </p>
             </div>
           </form>

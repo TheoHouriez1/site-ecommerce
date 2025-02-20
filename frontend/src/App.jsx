@@ -11,13 +11,14 @@ import Admin from './pages/AdminPage.jsx'
 import AdminProducts from './pages/AdminPages/AdminProduct.jsx'
 import EditProduct from './pages/AdminPages/EditProduct.jsx'
 import CreateProduct from './pages/AdminPages/CreateProduct.jsx'
+import AdminOrder from './pages/AdminPages/AdminOrder.jsx';
+import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx'; 
 
-const basename = "/theo/html/site-ecommerce/frontend/dist"; 
+const basename = "/theo/site-ecommerce/frontend/dist"; 
 
 function App() {
   return (
-    // <BrowserRouter basename={basename}>
-  <BrowserRouter>
+    <BrowserRouter basename = "/theo/site-ecommerce/frontend/dist" >
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginComponent />} />
@@ -30,6 +31,8 @@ function App() {
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/products/new" element={<CreateProduct />} />
         <Route path="/admin/products/edit/:id" element={<EditProduct />} />
+        <Route path="/admin/orders" element={<AdminOrder />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );

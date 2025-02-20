@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/logout', {
+      await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/logout', {
         method: 'POST',
         credentials: 'include',
         headers: {

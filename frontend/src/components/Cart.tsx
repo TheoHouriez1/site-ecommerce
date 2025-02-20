@@ -136,7 +136,7 @@ const PaymentForm = ({ total, cart }) => {
         price: total
       };
 
-      const orderResponse = await fetch('http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/create-order', {
+      const orderResponse = await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
