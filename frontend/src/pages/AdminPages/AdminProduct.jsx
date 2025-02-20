@@ -1,6 +1,7 @@
 // src/pages/AdminPages/AdminProduct.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminNavbar from '../../components/AdminNavbar';
 import { 
   Search, 
   Plus, 
@@ -29,7 +30,7 @@ const AdminProduct = () => {
     }
 
     // Récupération des produits
-    fetch("http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/product")
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
@@ -42,7 +43,7 @@ const AdminProduct = () => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       try {
         const response = await fetch(
-          `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/delete-product/${productId}`,
+          `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/delete-product/${productId}`,
           {
             method: 'DELETE'
           }
@@ -99,6 +100,7 @@ const AdminProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+ <AdminNavbar /> <br /><br />      
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -163,7 +165,7 @@ const AdminProduct = () => {
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <img 
-                        src={`http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`}
+                        src={`http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}`}
                         alt={product.name}
                         className="h-12 w-12 object-cover rounded-lg"
                       />

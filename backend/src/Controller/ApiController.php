@@ -20,6 +20,9 @@ use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\MailerInterface;
+
 
 class ApiController extends AbstractController
 {
@@ -47,9 +50,10 @@ class ApiController extends AbstractController
     }
 
     #[Route('/product/{id}', name: 'api_get_product', methods: ['GET'])]
-    public function getProduct(int $id): JsonResponse
+    public function getProduct(string $id): JsonResponse
     {
-        $product = $this->entityManager->getRepository(Product::class)->find($id);
+        $productId = (int) $id;
+        $product = $this->entityManager->getRepository(Product::class)->find($productId);
         
         if (!$product) {
             return new JsonResponse(['error' => 'Produit non trouvé'], 404);
@@ -68,7 +72,7 @@ class ApiController extends AbstractController
             if (!$product) {
                 return new JsonResponse(['error' => 'Produit non trouvé'], 404);
             }
-
+    
             // Mise à jour des données de base
             $product->setName($request->request->get('name'));
             $product->setDescription($request->request->get('description'));
@@ -77,20 +81,21 @@ class ApiController extends AbstractController
             // Gestion des tailles
             $sizes = json_decode($request->request->get('sizes'), true);
             $product->setSizes($sizes);
-
+    
             // Gestion des images
             $uploadDir = $this->getParameter('image_dir');
-
+    
             // Image principale
             if ($request->files->has('image')) {
                 $image = $request->files->get('image');
+                // Supprimer l'ancienne image si elle existe
                 if ($product->getImage()) {
                     $this->removeOldImage($product->getImage(), $uploadDir);
                 }
                 $newFilename = $this->uploadImage($image, $uploadDir);
                 $product->setImage($newFilename);
             }
-
+    
             // Image 2
             if ($request->files->has('image2')) {
                 $image2 = $request->files->get('image2');
@@ -100,7 +105,7 @@ class ApiController extends AbstractController
                 $newFilename = $this->uploadImage($image2, $uploadDir);
                 $product->setImage2($newFilename);
             }
-
+    
             // Image 3
             if ($request->files->has('image3')) {
                 $image3 = $request->files->get('image3');
@@ -110,22 +115,16 @@ class ApiController extends AbstractController
                 $newFilename = $this->uploadImage($image3, $uploadDir);
                 $product->setImage3($newFilename);
             }
-
+    
             $this->entityManager->flush();
-
+    
+            // Sérialiser le produit correctement
+            $jsonContent = $this->serializer->serialize($product, 'json', ['groups' => 'product:read']);
+            
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit mis à jour avec succès',
-                'product' => [
-                    'id' => $product->getId(),
-                    'name' => $product->getName(),
-                    'description' => $product->getDescription(),
-                    'price' => $product->getPrice(),
-                    'sizes' => $product->getSizes(),
-                    'image' => $product->getImage(),
-                    'image2' => $product->getImage2(),
-                    'image3' => $product->getImage3()
-                ]
+                'product' => json_decode($jsonContent, true)
             ]);
             
         } catch (\Exception $e) {
@@ -135,49 +134,33 @@ class ApiController extends AbstractController
             ], 500);
         }
     }
-
     #[Route('/api/create-product', name: 'api_create_product', methods: ['POST'])]
+    #[IsGranted('PUBLIC_ACCESS')]
     public function createProduct(Request $request): JsonResponse
     {
         try {
+            $data = json_decode($request->getContent(), true);
+    
+            // Validation des données
+            if (!$data) {
+                return new JsonResponse(['error' => 'Données invalides'], 400);
+            }
+    
+            // Création du produit
             $product = new Product();
+            $product->setName($data['name']);
+            $product->setDescription($data['description']);
+            $product->setPrice((float)$data['price']);
+            $product->setSizes($data['sizes']);
             
-            // Récupération des données
-            $product->setName($request->request->get('name'));
-            $product->setDescription($request->request->get('description'));
-            $product->setPrice($request->request->get('price'));
-            
-            // Gestion des tailles
-            $sizes = json_decode($request->request->get('sizes'), true);
-            $product->setSizes($sizes);
-
-            // Gestion des images
-            $uploadDir = $this->getParameter('image_dir');
-
-            // Image principale
-            if ($request->files->has('image')) {
-                $image = $request->files->get('image');
-                $newFilename = $this->uploadImage($image, $uploadDir);
-                $product->setImage($newFilename);
-            }
-
-            // Image 2
-            if ($request->files->has('image2')) {
-                $image2 = $request->files->get('image2');
-                $newFilename = $this->uploadImage($image2, $uploadDir);
-                $product->setImage2($newFilename);
-            }
-
-            // Image 3
-            if ($request->files->has('image3')) {
-                $image3 = $request->files->get('image3');
-                $newFilename = $this->uploadImage($image3, $uploadDir);
-                $product->setImage3($newFilename);
-            }
-
+            // Stockage des noms des images
+            if (isset($data['image'])) $product->setImage($data['image']);
+            if (isset($data['image2'])) $product->setImage2($data['image2']);
+            if (isset($data['image3'])) $product->setImage3($data['image3']);
+    
             $this->entityManager->persist($product);
             $this->entityManager->flush();
-
+    
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit créé avec succès',
@@ -192,15 +175,14 @@ class ApiController extends AbstractController
                     'image3' => $product->getImage3()
                 ]
             ], 201);
-
+    
         } catch (\Exception $e) {
             return new JsonResponse([
-                'success' => false,
-                'error' => $e->getMessage()
+                'error' => 'Erreur interne du serveur',
+                'details' => $e->getMessage()
             ], 500);
         }
     }
-
     #[Route('/api/delete-product/{id}', name: 'api_delete_product', methods: ['DELETE', 'OPTIONS'])]
     public function deleteProduct(int $id): JsonResponse
     {
@@ -458,4 +440,95 @@ class ApiController extends AbstractController
             ], 500);
         }
     }
+
+    #[Route('/orders', name: 'api_orders', methods: ['GET'])]
+    public function getOrders(): JsonResponse
+    {
+        $orders = $this->entityManager->getRepository(Order::class)->findAll();
+        $jsonContent = $this->serializer->serialize($orders, 'json', ['groups' => 'order:read']);
+        
+        return new JsonResponse($jsonContent, 200, [], true);
+    }
+
+    #[Route('/orders/{id}', name: 'api_get_order', methods: ['GET'])]
+    public function getOrder(string $id): JsonResponse
+    {
+        $orderId = (int) $id;
+        $order = $this->entityManager->getRepository(Order::class)->find($orderId);
+        
+        if (!$order) {
+            return new JsonResponse(['error' => 'Commande non trouvée'], 404);
+        }
+        
+        $jsonContent = $this->serializer->serialize($order, 'json', ['groups' => 'order:read']);
+        return new JsonResponse($jsonContent, 200, [], true);
+    }
+// Dans ApiController.php
+
+#[Route('/api/contact', name: 'contact_submit', methods: ['POST', 'OPTIONS'])]
+#[IsGranted('PUBLIC_ACCESS')]  // Ajoutez cette ligne
+public function submit(Request $request, MailerInterface $mailer): JsonResponse
+{
+    // Gérer la requête CORS preflight
+    if ($request->getMethod() === 'OPTIONS') {
+        $response = new JsonResponse(null, 204);
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+        return $response;
+    }
+
+    try {
+        $data = json_decode($request->getContent(), true);
+
+        // Validation des données
+        if (!isset($data['name']) || !isset($data['email']) || !isset($data['message'])) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Les champs nom, email et message sont obligatoires'
+            ], 400);
+        }
+
+        // Créer l'email
+        $email = (new Email())
+            ->from('theoshopecommerce@gmail.com')
+            ->to('theohouriez1@gmail.com')
+            ->subject('Nouveau message de contact: ' . ($data['subject'] ?? 'Sans sujet'))
+            ->html($this->renderView('emails/contact.html.twig', [
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? 'Non renseigné',
+                'subject' => $data['subject'] ?? 'Sans sujet',
+                'message' => $data['message']
+            ]));
+
+        // Envoyer l'email
+        $mailer->send($email);
+
+        $response = new JsonResponse([
+            'success' => true,
+            'message' => 'Message envoyé avec succès'
+        ]);
+
+        // Ajouter les headers CORS
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
+
+    } catch (\Exception $e) {
+        $response = new JsonResponse([
+            'success' => false,
+            'message' => 'Erreur lors de l\'envoi du message'
+        ], 500);
+
+        // Ajouter les headers CORS même en cas d'erreur
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
+    }
+}
 }

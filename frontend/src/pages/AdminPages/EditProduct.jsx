@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import AdminNavbar from '../../components/AdminNavbar';
 import { 
   Save,
   X,
   ArrowLeft,
-  Upload,
-  Plus,
-  Trash2
+  Upload
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -43,7 +41,7 @@ const EditProduct = () => {
 
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/product/${id}`);
+        const response = await fetch(`http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product/${id}`);
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         const product = await response.json();
         
@@ -58,9 +56,9 @@ const EditProduct = () => {
         });
         
         setImagePreview({
-          image1: product.image ? `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}` : null,
-          image2: product.image2 ? `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image2}` : null,
-          image3: product.image3 ? `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image3}` : null
+          image1: product.image ? `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}` : null,
+          image2: product.image2 ? `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image2}` : null,
+          image3: product.image3 ? `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image3}` : null
         });
         
         setLoading(false);
@@ -116,41 +114,37 @@ const EditProduct = () => {
     setSuccess(null);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('sizes', JSON.stringify(formData.sizes));
-      if (formData.image) formDataToSend.append('image', formData.image);
-      if (formData.image2) formDataToSend.append('image2', formData.image2);
-      if (formData.image3) formDataToSend.append('image3', formData.image3);
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('description', formData.description);
+        formDataToSend.append('price', formData.price);
+        formDataToSend.append('sizes', JSON.stringify(formData.sizes));
+        if (formData.image) formDataToSend.append('image', formData.image);
+        if (formData.image2) formDataToSend.append('image2', formData.image2);
+        if (formData.image3) formDataToSend.append('image3', formData.image3);
 
-      // URL mise à jour pour correspondre à la route backend
-      const response = await fetch(
-        `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/editProduct/${id}`, 
-        {
-          method: 'POST',
-          body: formDataToSend
+        const response = await fetch(
+            `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/editProduct/${id}`, 
+            {
+                method: 'POST',
+                body: formDataToSend
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors de la mise à jour');
         }
-      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la mise à jour');
-      }
-
-      setSuccess('Produit mis à jour avec succès');
-      setTimeout(() => {
-        navigate('/admin/products');
-      }, 1500);
-      
+        setSuccess('Produit mis à jour avec succès');
+        
     } catch (error) {
-      setError(error.message);
+        setError(error.message);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-};
+  };
 
   if (loading) {
     return (
@@ -181,8 +175,28 @@ const EditProduct = () => {
     );
   }
 
+  if (success) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <Save className="mx-auto text-green-500 mb-4" size={48} />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Succès</h2>
+          <p className="text-gray-600">{success}</p>
+          <button
+            onClick={() => navigate('/admin/products')}
+            className="mt-4 inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300"
+          >
+            <ArrowLeft size={20} />
+            Retour
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+       <AdminNavbar /> <br /><br />
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -365,8 +379,8 @@ const EditProduct = () => {
                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
                 required
               />
-            </div>
-{/* Sizes */}
+            </div>  
+          {/* Sizes */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tailles disponibles

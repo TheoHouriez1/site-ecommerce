@@ -21,7 +21,7 @@ export const LoginComponent = () => {
     try {
       console.log('🔹 Tentative de connexion avec:', { email, password, rememberMe });
       const response = await fetch(
-        'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/login',
+        'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/login',
         {
           method: 'POST',
           headers: {
@@ -48,7 +48,7 @@ export const LoginComponent = () => {
           email: data.email,
           roles: data.roles,
           isAuthenticated: true
-        }, rememberMe); // Ajout de l'option rememberMe
+        }, rememberMe);
         if (loginSuccess) {
           console.log("✅ Utilisateur stocké dans le contexte:", data);
           navigate('/');
@@ -63,6 +63,10 @@ export const LoginComponent = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRegisterClick = () => {
+    navigate('/register');
   };
 
   return (
@@ -146,9 +150,12 @@ export const LoginComponent = () => {
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Pas de compte ?{' '}
-                <a href="/register" className="text-blue-600 hover:underline transition duration-300">
+                <button
+                  onClick={handleRegisterClick}
+                  className="text-blue-600 hover:underline transition duration-300 cursor-pointer bg-transparent border-none p-0"
+                >
                   Inscrivez-vous
-                </a>
+                </button>
               </p>
             </div>
           </form>

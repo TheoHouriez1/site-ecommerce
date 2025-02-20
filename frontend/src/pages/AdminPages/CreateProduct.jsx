@@ -82,40 +82,77 @@ const CreateProduct = () => {
     setSuccess(null);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('sizes', JSON.stringify(formData.sizes));
-      if (formData.image) formDataToSend.append('image', formData.image);
-      if (formData.image2) formDataToSend.append('image2', formData.image2);
-      if (formData.image3) formDataToSend.append('image3', formData.image3);
-
-      const response = await fetch(
-        'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/api/create-product', 
-        {
-          method: 'POST',
-          body: formDataToSend
+        // Validation des champs
+        if (!formData.name || !formData.description || !formData.price || formData.sizes.length === 0) {
+            throw new Error('Veuillez remplir tous les champs obligatoires et sélectionner au moins une taille');
         }
-      );
 
-      const data = await response.json();
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('description', formData.description);
+        formDataToSend.append('price', formData.price);
+        formDataToSend.append('sizes', JSON.stringify(formData.sizes));
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la création');
-      }
+        // Ajouter les images si elles existent
+        if (formData.image) {
+            formDataToSend.append('image', formData.image);
+        }
+        if (formData.image2) {
+            formDataToSend.append('image2', formData.image2);
+        }
+        if (formData.image3) {
+            formDataToSend.append('image3', formData.image3);
+        }
 
-      setSuccess('Produit créé avec succès');
-      setTimeout(() => {
-        navigate('/admin/products');
-      }, 2000);
-      
+        const response = await fetch(
+            'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-product',
+            {
+                method: 'POST',
+                body: formDataToSend,
+                // Ne pas définir le Content-Type, il sera automatiquement défini avec FormData
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors de la création du produit');
+        }
+
+        setSuccess('Produit créé avec succès');
+        setTimeout(() => {
+            navigate('/admin/products');
+        }, 1500);
+
     } catch (error) {
-      setError(error.message);
+        console.error('Erreur lors de la création:', error);
+        setError(error.message || 'Une erreur est survenue lors de la création du produit');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
+const uploadImage = async (file, path) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(path, {
+            method: 'POST', // Changé de PUT à POST car c'est plus courant pour l'upload de fichiers
+            body: formData,
+            headers: {
+                // Ne pas définir Content-Type car il sera automatiquement défini avec FormData
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur lors de l'upload de l'image: ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Erreur upload:', error);
+        throw error;
+    }
+};
 
   if (error) {
     return (
@@ -150,6 +187,7 @@ const CreateProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+       <AdminNavbar /> <br /><br />
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">

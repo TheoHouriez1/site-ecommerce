@@ -4,7 +4,7 @@ import { ShoppingCart, Heart, Minus, Plus, ChevronLeft, ChevronRight } from 'luc
 import { CartContext } from '../components/CartContext';
 import { NavbarComponent } from '../components/NavBarComponents';
 
-const BACKEND_URL = 'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/';
+const BACKEND_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
 
 const Carousel = ({ 
   slides, 

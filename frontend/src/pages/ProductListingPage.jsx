@@ -29,7 +29,7 @@ const ProductListingPage = () => {
   const [favorites, setFavorites] = useState(new Set());
 
   useEffect(() => {
-    fetch("http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php/product")
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
@@ -42,7 +42,7 @@ const ProductListingPage = () => {
     navigate('/Productcard', { 
       state: { 
         id: product.id,
-        image: `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`,
+        image: `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}`,
         title: product.name,
         description: product.description,
         price: parseFloat(product.price),
@@ -57,7 +57,7 @@ const ProductListingPage = () => {
       id: product.id,
       name: product.name,
       price: parseFloat(product.price),
-      image: `http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`,
+      image: `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}`,
       quantity: 1,
       sizes: product.sizes
     });
@@ -199,7 +199,7 @@ const ProductListingPage = () => {
             >
               <div className={`relative ${viewMode === 'list' ? 'w-1/3' : ''}`}>
                 <img 
-                  src={`http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/uploads/images/${product.image}`}
+                  src={`http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}`}
                   alt={product.name}
                   className="w-full h-full object-cover aspect-square"
                 />

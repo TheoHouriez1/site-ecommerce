@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import AdminNavbar from '../components/AdminNavbar';
 import {
   BarChart2,
   Tags,
@@ -8,7 +9,7 @@ import {
 } from 'lucide-react';
 import '../index.css';
 
-const BACKEND_URL = 'http://silumnia.ddns.net/theo/html/site-ecommerce/backend/public/index.php';
+const BACKEND_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php';
 
 const Admin = () => {
   const { user } = useAuth();
@@ -82,6 +83,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+            <AdminNavbar /> <br /><br />
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
