@@ -19,56 +19,271 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ApiController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
     private SerializerInterface $serializer;
+    private SluggerInterface $slugger;
 
-    public function __construct(SerializerInterface $serializer)
-    {
+    public function __construct(
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
+    ) {
         $this->serializer = $serializer;
+        $this->entityManager = $entityManager;
+        $this->slugger = $slugger;
     }
     
     #[Route('/product', name: 'api_products', methods: ['GET'])]
-    public function getProducts(EntityManagerInterface $entityManager): JsonResponse
+    public function getProducts(): JsonResponse
     {
-        $products = $entityManager->getRepository(Product::class)->findAll();
+        $products = $this->entityManager->getRepository(Product::class)->findAll();
         $jsonContent = $this->serializer->serialize($products, 'json', ['groups' => 'product:read']);
         
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
-    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    public function login(
-        Request $request, 
-        Security $security, 
-        UserPasswordHasherInterface $passwordHasher, 
-        EntityManagerInterface $em
-    ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
-        $email = $data['email'] ?? null;
-        $password = $data['password'] ?? null;
-    
-        $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-    
-        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
-            return new JsonResponse(['error' => 'Email ou mot de passe incorrect'], 401);
+    #[Route('/product/{id}', name: 'api_get_product', methods: ['GET'])]
+    public function getProduct(int $id): JsonResponse
+    {
+        $product = $this->entityManager->getRepository(Product::class)->find($id);
+        
+        if (!$product) {
+            return new JsonResponse(['error' => 'Produit non trouvé'], 404);
+        }
+        
+        $jsonContent = $this->serializer->serialize($product, 'json', ['groups' => 'product:read']);
+        return new JsonResponse($jsonContent, 200, [], true);
+    }
+
+    #[Route('/editProduct/{id}', name: 'api_update_product', methods: ['POST'])]
+    public function updateProduct(Request $request, int $id): JsonResponse
+    {
+        try {
+            $product = $this->entityManager->getRepository(Product::class)->find($id);
+            
+            if (!$product) {
+                return new JsonResponse(['error' => 'Produit non trouvé'], 404);
+            }
+
+            // Mise à jour des données de base
+            $product->setName($request->request->get('name'));
+            $product->setDescription($request->request->get('description'));
+            $product->setPrice($request->request->get('price'));
+            
+            // Gestion des tailles
+            $sizes = json_decode($request->request->get('sizes'), true);
+            $product->setSizes($sizes);
+
+            // Gestion des images
+            $uploadDir = $this->getParameter('image_dir');
+
+            // Image principale
+            if ($request->files->has('image')) {
+                $image = $request->files->get('image');
+                if ($product->getImage()) {
+                    $this->removeOldImage($product->getImage(), $uploadDir);
+                }
+                $newFilename = $this->uploadImage($image, $uploadDir);
+                $product->setImage($newFilename);
+            }
+
+            // Image 2
+            if ($request->files->has('image2')) {
+                $image2 = $request->files->get('image2');
+                if ($product->getImage2()) {
+                    $this->removeOldImage($product->getImage2(), $uploadDir);
+                }
+                $newFilename = $this->uploadImage($image2, $uploadDir);
+                $product->setImage2($newFilename);
+            }
+
+            // Image 3
+            if ($request->files->has('image3')) {
+                $image3 = $request->files->get('image3');
+                if ($product->getImage3()) {
+                    $this->removeOldImage($product->getImage3(), $uploadDir);
+                }
+                $newFilename = $this->uploadImage($image3, $uploadDir);
+                $product->setImage3($newFilename);
+            }
+
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Produit mis à jour avec succès',
+                'product' => [
+                    'id' => $product->getId(),
+                    'name' => $product->getName(),
+                    'description' => $product->getDescription(),
+                    'price' => $product->getPrice(),
+                    'sizes' => $product->getSizes(),
+                    'image' => $product->getImage(),
+                    'image2' => $product->getImage2(),
+                    'image3' => $product->getImage3()
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/create-product', name: 'api_create_product', methods: ['POST'])]
+    public function createProduct(Request $request): JsonResponse
+    {
+        try {
+            $product = new Product();
+            
+            // Récupération des données
+            $product->setName($request->request->get('name'));
+            $product->setDescription($request->request->get('description'));
+            $product->setPrice($request->request->get('price'));
+            
+            // Gestion des tailles
+            $sizes = json_decode($request->request->get('sizes'), true);
+            $product->setSizes($sizes);
+
+            // Gestion des images
+            $uploadDir = $this->getParameter('image_dir');
+
+            // Image principale
+            if ($request->files->has('image')) {
+                $image = $request->files->get('image');
+                $newFilename = $this->uploadImage($image, $uploadDir);
+                $product->setImage($newFilename);
+            }
+
+            // Image 2
+            if ($request->files->has('image2')) {
+                $image2 = $request->files->get('image2');
+                $newFilename = $this->uploadImage($image2, $uploadDir);
+                $product->setImage2($newFilename);
+            }
+
+            // Image 3
+            if ($request->files->has('image3')) {
+                $image3 = $request->files->get('image3');
+                $newFilename = $this->uploadImage($image3, $uploadDir);
+                $product->setImage3($newFilename);
+            }
+
+            $this->entityManager->persist($product);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Produit créé avec succès',
+                'product' => [
+                    'id' => $product->getId(),
+                    'name' => $product->getName(),
+                    'description' => $product->getDescription(),
+                    'price' => $product->getPrice(),
+                    'sizes' => $product->getSizes(),
+                    'image' => $product->getImage(),
+                    'image2' => $product->getImage2(),
+                    'image3' => $product->getImage3()
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/delete-product/{id}', name: 'api_delete_product', methods: ['DELETE', 'OPTIONS'])]
+    public function deleteProduct(int $id): JsonResponse
+    {
+        // Gérer la requête CORS preflight
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            $response = new JsonResponse(null, 204);
+            $response->headers->set('Access-Control-Allow-Origin', '*');
+            $response->headers->set('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            return $response;
         }
     
-        // Création de la session Symfony
-        $request->getSession()->set('user_id', $user->getId());
+        try {
+            $product = $this->entityManager->getRepository(Product::class)->find($id);
+            
+            if (!$product) {
+                $response = new JsonResponse(['error' => 'Produit non trouvé'], 404);
+                $response->headers->set('Access-Control-Allow-Origin', '*');
+                return $response;
+            }
     
-        return new JsonResponse([
-            'message' => 'Connexion réussie',
-            'id' => $user->getId(),
-            'firstName' => $user->getFirstName(),
-            'lastName' => $user->getLastName(),
-            'email' => $user->getEmail(),
-            'roles' => $user->getRoles()
-        ]);
+            // Suppression des images
+            $uploadDir = $this->getParameter('image_dir');
+            if ($product->getImage()) {
+                $this->removeOldImage($product->getImage(), $uploadDir);
+            }
+            if ($product->getImage2()) {
+                $this->removeOldImage($product->getImage2(), $uploadDir);
+            }
+            if ($product->getImage3()) {
+                $this->removeOldImage($product->getImage3(), $uploadDir);
+            }
+    
+            $this->entityManager->remove($product);
+            $this->entityManager->flush();
+    
+            $response = new JsonResponse([
+                'success' => true,
+                'message' => 'Produit supprimé avec succès'
+            ]);
+    
+            // Ajout des headers CORS
+            $response->headers->set('Access-Control-Allow-Origin', '*');
+            $response->headers->set('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+            return $response;
+    
+        } catch (\Exception $e) {
+            $response = new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+    
+            // Ajout des headers CORS même en cas d'erreur
+            $response->headers->set('Access-Control-Allow-Origin', '*');
+            $response->headers->set('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+            return $response;
+        }
     }
-    
 
+    private function uploadImage($file, $uploadDir): string
+    {
+        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename = $this->slugger->slug($originalFilename);
+        $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
+        
+        $file->move($uploadDir, $newFilename);
+        
+        return $newFilename;
+    }
+
+    private function removeOldImage(?string $filename, string $uploadDir): void
+    {
+        if ($filename) {
+            $oldFilePath = $uploadDir . '/' . $filename;
+            if (file_exists($oldFilePath)) {
+                unlink($oldFilePath);
+            }
+        }
+    }
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(
         Request $request, 
@@ -243,8 +458,4 @@ class ApiController extends AbstractController
             ], 500);
         }
     }
-        
-    
-    
-    
 }

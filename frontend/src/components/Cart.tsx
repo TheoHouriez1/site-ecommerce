@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useCart } from '../components/CartContext';
+import { useCart } from './CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { NavbarComponent } from '../components/NavBarComponents';
+import { NavbarComponent } from './NavBarComponents';
 import { 
   Package, 
   CreditCard, 

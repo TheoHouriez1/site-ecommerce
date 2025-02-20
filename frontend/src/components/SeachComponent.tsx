@@ -186,4 +186,4 @@ const SearchComponent: React.FC = () => {
   );
 };
 
-export default SearchComponent;
+export default SearchComponent; 

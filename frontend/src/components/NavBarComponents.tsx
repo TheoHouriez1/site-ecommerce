@@ -10,10 +10,11 @@ import {
   Package,
   LogOut,
   ChevronDown,
-  Settings
+  Settings,
+  Boxes
 } from 'lucide-react';
-import { CartContext } from '../components/CartContext';
-import { useAuth } from '../context/AuthContext';
+import { CartContext } from './CartContext.tsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import SeachComponent from './SeachComponent.tsx';
 
 export const NavbarComponent = () => {
@@ -22,7 +23,7 @@ export const NavbarComponent = () => {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
   const handleLogout = async () => {
@@ -63,7 +64,6 @@ export const NavbarComponent = () => {
           size={18} 
         />
       </button>
-
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg py-2 border border-gray-100">
           {user && user.isAuthenticated ? (
@@ -93,6 +93,19 @@ export const NavbarComponent = () => {
                   <Package size={18} />
                   <span>Mes commandes</span>
                 </button>
+                {/* Menu Admin - visible uniquement pour les administrateurs */}
+                {user && user.roles && user.roles.includes('ROLE_ADMIN') && (
+                  <button 
+                    onClick={() => {
+                      navigate('/admin');
+                      setIsDropdownOpen(false);
+                    }}
+                    className="flex items-center space-x-3 w-full px-4 py-2 text-left hover:bg-gray-50 text-gray-700"
+                  >
+                    <Boxes size={18} />
+                    <span>Administration</span>
+                  </button>
+                )}
                 <button 
                   onClick={() => {
                     navigate('/settings');
@@ -172,7 +185,6 @@ export const NavbarComponent = () => {
               </button>
             </div>
           </div>
-
           {/* Actions desktop */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative">
