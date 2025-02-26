@@ -15,6 +15,7 @@ import AdminOrder from './pages/AdminPages/AdminOrder.jsx';
 import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx';
 import ContactPage from './pages/ContactPage.jsx'; 
 import NotFound from './pages/NotFoundPage.jsx';
+import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx'; 
 
 const basename = "/theo/site-ecommerce/frontend/dist"; 
 

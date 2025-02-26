@@ -463,6 +463,7 @@ class ApiController extends AbstractController
         $jsonContent = $this->serializer->serialize($order, 'json', ['groups' => 'order:read']);
         return new JsonResponse($jsonContent, 200, [], true);
     }
+<<<<<<< HEAD
 // Dans ApiController.php
 
 #[Route('/api/contact', name: 'contact_submit', methods: ['POST', 'OPTIONS'])]
@@ -532,3 +533,6 @@ public function submit(Request $request, MailerInterface $mailer): JsonResponse
     }
 }
 }
+=======
+}
+>>>>>>> 4b1718a76a2e513ca211fae54adf811580180ca8
