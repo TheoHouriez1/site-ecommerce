@@ -14,13 +14,12 @@ import CreateProduct from './pages/AdminPages/CreateProduct.jsx'
 import AdminOrder from './pages/AdminPages/AdminOrder.jsx';
 import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx';
 import ContactPage from './pages/ContactPage.jsx'; 
-import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx'; 
 
 const basename = "/theo/site-ecommerce/frontend/dist"; 
 
 function App() {
   return (
-    <BrowserRouter basename = "/theo/site-ecommerce/frontend/dist">
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginComponent />} />
