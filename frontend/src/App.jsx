@@ -14,12 +14,15 @@ import CreateProduct from './pages/AdminPages/CreateProduct.jsx'
 import AdminOrder from './pages/AdminPages/AdminOrder.jsx';
 import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx';
 import ContactPage from './pages/ContactPage.jsx'; 
+import Album from './pages/AlbumPage.jsx'; 
+import UserOrder from './pages/OrderPage.jsx';
+
 
 const basename = "/theo/site-ecommerce/frontend/dist"; 
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename = "/theo/site-ecommerce/frontend/dist">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginComponent />} />
@@ -35,6 +38,8 @@ function App() {
         <Route path="/admin/orders" element={<AdminOrder />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/album" element={<Album />} />
+        <Route path="/order" element={<UserOrder />} />
       </Routes>
     </BrowserRouter>
   );

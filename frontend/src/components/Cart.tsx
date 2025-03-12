@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from './CartContext';
@@ -12,10 +12,15 @@ import {
   User, 
   Home, 
   Check, 
-  AlertCircle 
+  AlertCircle,
+  Search,
+  X
 } from 'lucide-react';
 
+// Conservez votre clé Stripe
 const stripePromise = loadStripe('pk_test_51QmzOTIE3DEUnxOz4D7vaYyWg2lCUfqlBuhyZr1mSPRUpWuEexP3XSBmnw1fOSBLQVUAv4YpS4KxdRbaof3FHXqf00uhvSiyP4');
+
+// Composants existants comme ProductItem et OrderSummary sans changement...
 
 const ProductItem = ({ item }) => (
   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
@@ -67,6 +72,149 @@ const OrderSummary = ({ cart, total }) => (
   </div>
 );
 
+// Nouveau composant AddressAutocomplete
+const AddressAutocomplete = ({ value, onChange }) => {
+  const [inputValue, setInputValue] = useState(value);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
+  const autocompleteRef = useRef(null);
+
+  // Fonction pour gérer les suggestions d'adresses
+  const fetchAddressSuggestions = async (query) => {
+    if (!query || query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      // Utilisation de l'API Nominatim (OpenStreetMap) avec paramètre pour limiter à la France
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=fr`);
+      const data = await response.json();
+
+      // Transformer les résultats en format plus simple
+      const formattedSuggestions = data.map(item => ({
+        id: item.place_id,
+        text: item.display_name,
+        address: {
+          street: [item.address.road, item.address.house_number].filter(Boolean).join(' '),
+          city: item.address.city || item.address.town || item.address.village,
+          postcode: item.address.postcode,
+          country: item.address.country
+        }
+      }));
+
+      setSuggestions(formattedSuggestions);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des suggestions d\'adresse:', error);
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Gestion du changement de valeur dans l'input
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    fetchAddressSuggestions(value);
+  };
+
+  // Sélectionner une suggestion
+  const selectSuggestion = (suggestion) => {
+    setInputValue(suggestion.text);
+    onChange(suggestion.text);
+    setSuggestions([]);
+  };
+
+  // Fermer les suggestions lors d'un clic à l'extérieur
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (autocompleteRef.current && !autocompleteRef.current.contains(event.target)) {
+        setSuggestions([]);
+        setIsFocused(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative" ref={autocompleteRef}>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Home className="text-gray-400" size={20} />
+        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={() => setIsFocused(true)}
+          placeholder="Rechercher votre adresse en France..."
+          className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all duration-300"
+        />
+        {inputValue && (
+          <button
+            type="button"
+            onClick={() => {
+              setInputValue('');
+              onChange('');
+              setSuggestions([]);
+              inputRef.current.focus();
+            }}
+            className="absolute inset-y-0 right-3 flex items-center"
+          >
+            <X className="text-gray-400 hover:text-gray-600" size={16} />
+          </button>
+        )}
+        {isLoading && (
+          <div className="absolute inset-y-0 right-10 flex items-center">
+            <svg className="animate-spin h-4 w-4 text-gray-500" viewBox="0 0 24 24">
+              <circle 
+                className="opacity-25" 
+                cx="12" cy="12" r="10" 
+                stroke="currentColor" 
+                strokeWidth="4"
+                fill="none" 
+              />
+              <path 
+                className="opacity-75" 
+                fill="currentColor" 
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+        )}
+      </div>
+
+      {/* Liste des suggestions */}
+      {isFocused && suggestions.length > 0 && (
+        <div className="absolute z-10 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
+          <ul className="py-1">
+            {suggestions.map((suggestion) => (
+              <li 
+                key={suggestion.id}
+                onClick={() => selectSuggestion(suggestion)}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700 break-words"
+              >
+                {suggestion.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Version modifiée du composant InputField (rien ne change)
 const InputField = ({ icon: Icon, label, type, value, onChange, placeholder }) => {
   const handleChange = (e) => {
     e.persist();
@@ -93,6 +241,7 @@ const InputField = ({ icon: Icon, label, type, value, onChange, placeholder }) =
   );
 };
 
+// PaymentForm modifié pour inclure l'autocomplétion d'adresse
 const PaymentForm = ({ total, cart }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -194,13 +343,10 @@ const PaymentForm = ({ total, cart }) => {
           />
         </div>
 
-        <InputField
-          icon={Home}
-          label="Adresse"
-          type="text"
+        {/* Remplacez l'InputField d'adresse par notre nouveau composant AddressAutocomplete */}
+        <AddressAutocomplete
           value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="123 rue Example"
+          onChange={(value) => setAddress(value)}
         />
 
         <div className="space-y-2">
@@ -275,6 +421,7 @@ const PaymentForm = ({ total, cart }) => {
   );
 };
 
+// Reste du code inchangé
 const CheckoutPage = () => {
   const { cart, getCartTotal } = useCart();
   
