@@ -108,7 +108,7 @@ const Carousel = ({
             <ChevronRight size={20} className="stroke-2" />
           </button>
         </>
-      )}
+      )} 
 
       {/* Dots indicators */}
       {showDots && (
@@ -149,9 +149,7 @@ const ProductCard = () => {
   const [isLiked, setIsLiked] = useState(false);
 
   // Préparer les images avec URL complète
-  const images = [image, image2, image3]
-    .filter(img => img)
-    .map(img => `${BACKEND_URL}${img}`);
+  const images = [image,image2, image3]
 
   const handleQuantityChange = (change) => {
     setQuantity(Math.max(1, quantity + change));

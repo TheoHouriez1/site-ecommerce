@@ -21,8 +21,9 @@ import UserOrder from './pages/OrderPage.jsx';
 const basename = "/theo/site-ecommerce/frontend/dist"; 
 
 function App() {
+
   return (
-    <BrowserRouter basename = "/theo/site-ecommerce/frontend/dist">
+    <BrowserRouter basename = "/theo/site-ecommerce/frontend/dist" >
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginComponent />} />
@@ -39,9 +40,10 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/album" element={<Album />} />
-        <Route path="/order" element={<UserOrder />} />
+        <Route path="/orders" element={<UserOrder />} />
       </Routes>
     </BrowserRouter>
+
   );
 }
 

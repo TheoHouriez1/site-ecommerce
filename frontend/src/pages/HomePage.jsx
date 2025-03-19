@@ -32,36 +32,7 @@ const Home = () => {
       alt: 'Modèle portant un ensemble sportswear',
       title: 'Ensembles Sportswear'
     },
-    {
-      type: 'image',
-      src: '/uploads/pexels-mahdi-chaghari-9996334-28484977.jpg',
-      alt: 'Danseurs de hip-hop en tenues streetwear',
-      title: 'Mouvement Street Culture'
-    },
-    {
-      type: 'image',
-      src: '/api/placeholder/1260/750',
-      alt: 'Modèle portant des accessoires streetwear',
-      title: 'Accessoires Tendance'
-    },
-    {
-      type: 'video',
-      src: '/uploads/urban-lifestyle-video.mp4',
-      alt: 'Jeunes stylés dans une ambiance urbaine',
-      title: 'Lifestyle Urbain Authentique'
-    },
-    {
-      type: 'image',
-      src: '/api/placeholder/1260/750',
-      alt: 'Accessoires urbains tendance',
-      title: 'Accessoires Urbains'
-    },
-    {
-      type: 'image',
-      src: '/api/placeholder/1260/750',
-      alt: 'Look streetwear complet',
-      title: 'Style Streetwear Complet'
-    }
+    
   ];
 
   // Images du dropdown - style e-commerce
@@ -84,36 +55,6 @@ const Home = () => {
       alt: 'Basket streetwear sur fond blanc',
       index: 2
     },
-    {
-      type: 'image',
-      src: '/uploads/product-cap.jpg',
-      alt: 'Casquette sur fond blanc',
-      index: 3
-    },
-    {
-      type: 'image',
-      src: '/uploads/product-jacket.jpg',
-      alt: 'Veste en jean sur fond blanc',
-      index: 4
-    },
-    {
-      type: 'image',
-      src: '/uploads/product-sunglasses.jpg',
-      alt: 'Lunettes de soleil sur fond blanc',
-      index: 5
-    },
-    {
-      type: 'image',
-      src: '/uploads/product-pants.jpg',
-      alt: 'Pantalon cargo sur fond blanc',
-      index: 6
-    },
-    {
-      type: 'image',
-      src: '/uploads/product-outfit.jpg',
-      alt: 'Ensemble streetwear sur fond blanc',
-      index: 7
-    }
   ];
 
   // Set up auto-play functionality
