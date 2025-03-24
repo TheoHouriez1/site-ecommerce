@@ -4,6 +4,7 @@ import { NavbarComponent } from '../components/NavBarComponents';
 import ProductListingPage from './ProductListingPage';
 import { ArrowRight, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FooterComponent from '../components/FooterComponent';
 
 const Home = () => {
   const [currentMedia, setCurrentMedia] = useState(0);
@@ -456,6 +457,7 @@ const Home = () => {
       <div className="products-section">
         <ProductListingPage />
       </div>
+      <FooterComponent />
     </div>
   );
 };

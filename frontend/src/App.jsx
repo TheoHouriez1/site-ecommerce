@@ -16,6 +16,8 @@ import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx';
 import ContactPage from './pages/ContactPage.jsx'; 
 import Album from './pages/AlbumPage.jsx'; 
 import UserOrder from './pages/OrderPage.jsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
+import FAQPage from './pages/FAQPage.jsx';
 
 
 const basename = "/theo/site-ecommerce/frontend/dist"; 
@@ -23,7 +25,7 @@ const basename = "/theo/site-ecommerce/frontend/dist";
 function App() {
 
   return (
-    <BrowserRouter basename = "/theo/site-ecommerce/frontend/dist" >
+    <BrowserRouter  >
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginComponent />} />
@@ -41,6 +43,10 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/album" element={<Album />} />
         <Route path="/orders" element={<UserOrder />} />
+        <Route path="/politique-confidentialite" element={<PrivacyPolicyPage />} />
+        <Route path="/faq" element={<FAQPage />} />
+
+
       </Routes>
     </BrowserRouter>
 
