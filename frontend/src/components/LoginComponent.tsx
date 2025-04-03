@@ -27,6 +27,7 @@ export const LoginComponent = () => {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'X-API-TOKEN': 'uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm'
           },
           credentials: 'include',
           body: JSON.stringify({ email, password }),

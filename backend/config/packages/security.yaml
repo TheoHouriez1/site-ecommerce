@@ -34,14 +34,15 @@ security:
                 check_path: app_login
                 enable_csrf: true
 
-        # 🔹 Désactive la sécurité pour toutes les routes API
+        # 🔒 Sécurisation des routes API avec notre Token Authenticator
         api:
-            pattern: ^/api/
+            pattern: ^/theo/site-ecommerce/backend/public/index.php/api/
             stateless: true
-            security: false
+            custom_authenticators:
+                - App\Security\ApiTokenAuthenticator
 
     access_control:
-        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api/create-order, roles: PUBLIC_ACCESS }  # ✅ Cette ligne doit être avant /api/
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }  # ✅ Ce bloc doit être à la fin pour ne pas bloquer create-order
+        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/create-order, roles: PUBLIC_ACCESS }
+        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/, roles: IS_AUTHENTICATED_FULLY }

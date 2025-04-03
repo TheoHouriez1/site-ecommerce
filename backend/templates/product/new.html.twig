@@ -3,11 +3,48 @@
 {% block title %}New Product{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1>Create new Product</h1>
+<div class="container mt-4">
+    <h1>Créer un nouveau produit</h1>
 
-        {{ include('product/_form.html.twig',{'button_label' :'Add'}) }}
+    {# Affiche les erreurs globales du formulaire (important pour debug) #}
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
 
-        <a href="{{ path('app_product_index') }}">back to list</a>
+    <div class="mb-3">
+        {{ form_row(form.name) }}
     </div>
+    <div class="mb-3">
+        {{ form_row(form.description) }}
+    </div>
+    <div class="mb-3">
+        {{ form_row(form.price) }}
+    </div>
+    <div class="mb-3">
+        {{ form_row(form.stock) }}
+    </div>
+    <div class="mb-3">
+        {{ form_row(form.sizes) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.image) }}
+        {{ form_widget(form.image) }}
+        {{ form_errors(form.image) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.image2) }}
+        {{ form_widget(form.image2) }}
+        {{ form_errors(form.image2) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.image3) }}
+        {{ form_widget(form.image3) }}
+        {{ form_errors(form.image3) }}
+    </div>
+
+    <button class="btn btn-success">{{ button_label|default('Ajouter') }}</button>
+    {{ form_end(form) }}
+
+    <a class="btn btn-link mt-3" href="{{ path('app_product_index') }}">← Retour à la liste</a>
+</div>
 {% endblock %}

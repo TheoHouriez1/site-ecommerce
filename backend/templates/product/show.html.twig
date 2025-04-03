@@ -3,37 +3,67 @@
 {% block title %}Product{% endblock %}
 
 {% block body %}
-<div class="container">
-    <h1>Product</h1>
-        <table class="table">
-            <tbody>
-                <tr>
-                    <th>Id</th>
-                    <td>{{ product.id }}</td>
-                </tr>
-                <tr>
-                    <th>Name</th>
-                    <td>{{ product.name }}</td>
-                </tr>
-                <tr>
-                    <th>Description</th>
-                    <td>{{ product.description }}</td>
-                </tr>
-                <tr>
-                    <th>Price</th>
-                    <td>{{ product.price }}</td>
-                </tr>
-                <tr>
-                    <th>Stocks</th>
-                    <td>{{ product.stock }}</td>
-                </tr>
-            </tbody>
-        </table>
-    <td>
-        <a href="{{ path('app_product_index') }}">back to list</a>
-        <a href="{{ path('app_product_edit', {'id': product.id}) }}">edit</a>
-        <a href="{{ path('app_product_stock_add_history', {'id': product.id}) }}">afficher l'historique d'ajoute de Produit</a>
+<div class="container mt-4">
+    <h1>Détails du produit</h1>
+
+    <table class="table table-bordered mt-4">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ product.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ product.name }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ product.description }}</td>
+            </tr>
+            <tr>
+                <th>Prix</th>
+                <td>{{ product.price }} €</td>
+            </tr>
+            <tr>
+                <th>Stock</th>
+                <td>{{ product.stock }}</td>
+            </tr>
+            <tr>
+                <th>Images</th>
+                <td>
+                    <div class="d-flex gap-3 flex-wrap">
+                        {% if product.image %}
+                            <div>
+                                <img src="{{ asset('uploads/images/' ~ product.image) }}" alt="Image principale" style="max-width: 200px;" class="img-thumbnail">
+                                <p class="text-center mt-1">Image principale</p>
+                            </div>
+                        {% endif %}
+                        {% if product.image2 %}
+                            <div>
+                                <img src="{{ asset('uploads/images/' ~ product.image2) }}" alt="Image 2" style="max-width: 200px;" class="img-thumbnail">
+                                <p class="text-center mt-1">Image secondaire</p>
+                            </div>
+                        {% endif %}
+                        {% if product.image3 %}
+                            <div>
+                                <img src="{{ asset('uploads/images/' ~ product.image3) }}" alt="Image 3" style="max-width: 200px;" class="img-thumbnail">
+                                <p class="text-center mt-1">Image 3</p>
+                            </div>
+                        {% endif %}
+                        {% if not product.image and not product.image2 and not product.image3 %}
+                            <p>Aucune image disponible.</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-3">
+        <a class="btn btn-secondary" href="{{ path('app_product_index') }}">Retour à la liste</a>
+        <a class="btn btn-primary" href="{{ path('app_product_edit', {'id': product.id}) }}">Modifier</a>
+        {# <a class="btn btn-info" href="{{ path('app_product_stock_add_history', {'id': product.id}) }}">Historique d'ajouts</a> #}
         {{ include('product/_delete_form.html.twig') }}
-    </td>
+    </div>
 </div>
 {% endblock %}

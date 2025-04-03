@@ -115,6 +115,30 @@ class Product
         return $this;
     }
 
+    public function getImage2(): ?string
+    {
+        return $this->image2;
+    }
+
+    public function setImage2(?string $image2): static
+    {
+        $this->image2 = $image2;
+
+        return $this;
+    }
+
+    public function getImage3(): ?string
+    {
+        return $this->image3;
+    }
+
+    public function setImage3(?string $image3): static
+    {
+        $this->image3 = $image3;
+
+        return $this;
+    }
+
     public function getStock(): ?int
     {
         return $this->stock;
@@ -135,6 +159,7 @@ class Product
     public function setSizes(array $sizes): static
     {
         $this->sizes = $sizes;
+
         return $this;
     }
 }

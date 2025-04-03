@@ -96,7 +96,6 @@ class ApiController extends AbstractController
                 $product->setImage($newFilename);
             }
     
-            // Image 2
             if ($request->files->has('image2')) {
                 $image2 = $request->files->get('image2');
                 if ($product->getImage2()) {

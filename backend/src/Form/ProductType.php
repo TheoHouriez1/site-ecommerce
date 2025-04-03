@@ -11,17 +11,30 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 class ProductType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name')
-            ->add('description')
-            ->add('price')
-            ->add('stock')
-            ->add('sizes')
+        ->add('name')
+        ->add('description')
+        ->add('price')
+        ->add('stock')
+        ->add('sizes', ChoiceType::class, [
+            'choices' => [
+                'XS' => 'XS',
+                'S' => 'S',
+                'M' => 'M',
+                'L' => 'L',
+                'XL' => 'XL',
+                'XXL' => 'XXL',
+            ],
+            'multiple' => true,
+            'expanded' => true,
+        ])
+    
             ->add('image', FileType::class, [
                 'label' => 'Image du produit',
                 'mapped' => false,
