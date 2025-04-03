@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Cookie, User, Database, Eye, Bell, HelpCircle } from 'lucide-react';
 import NavbarComponent from '../components/NavBarComponents';
+import { resetCookieConsent } from '../components/CookieConsentComponent';
+import CookieConsentComponent from '../components/CookieConsentComponent';
 
 const PrivacyPolicyPage = () => {
   const navigate = useNavigate();
@@ -11,6 +13,10 @@ const PrivacyPolicyPage = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleResetCookies = () => {
+    resetCookieConsent();
   };
 
   return (
@@ -149,7 +155,7 @@ const PrivacyPolicyPage = () => {
             </p>
             <button 
               className="bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300"
-              onClick={() => alert('Préférences de cookies mises à jour (simulation pour projet scolaire)')}
+              onClick={handleResetCookies}
             >
               Gérer mes préférences de cookies
             </button>
@@ -243,6 +249,7 @@ const PrivacyPolicyPage = () => {
               </button>
             </div>
           </div>
+          <CookieConsentComponent />
         </div>
       </div>
     </>
