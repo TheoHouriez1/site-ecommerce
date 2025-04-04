@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, EyeOff, Eye, AlertCircle, ArrowRight, Check, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const RegisterComponent = () => {
@@ -13,6 +13,8 @@ export const RegisterComponent = () => {
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -89,8 +91,8 @@ export const RegisterComponent = () => {
         // Display success toast
         toast.success('Inscription réussie');
         
-        // Redirection vers la page de connexion
-        navigate('/login');
+        // Redirection vers la page de connexion avec paramètre
+        navigate('/login?registered=true');
       } else {
         // Handle specific error messages
         const errorMsg = data.error || data.errors?.join(', ') || 'Une erreur est survenue lors de l\'inscription';
@@ -111,125 +113,223 @@ export const RegisterComponent = () => {
     navigate('/login');
   };
 
+  // Vérification de force du mot de passe
+  const getPasswordStrength = (password) => {
+    if (!password) return { strength: 0, label: '' };
+    
+    let strength = 0;
+    if (password.length >= 8) strength += 1;
+    if (password.match(/[A-Z]/)) strength += 1;
+    if (password.match(/[0-9]/)) strength += 1;
+    if (password.match(/[^A-Za-z0-9]/)) strength += 1;
+    
+    const labels = ['Faible', 'Moyen', 'Fort', 'Excellent'];
+    return { 
+      strength, 
+      label: strength > 0 ? labels[Math.min(strength - 1, 3)] : '' 
+    };
+  };
+  
+  const passwordStrength = getPasswordStrength(formData.password);
+  
+  const getStrengthColor = (strength) => {
+    const colors = ['red-500', 'orange-500', 'yellow-500', 'green-500'];
+    return strength > 0 ? colors[Math.min(strength - 1, 3)] : 'gray-300';
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            Inscription
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* First Name Input */}
-            <div className="relative">
-              <label htmlFor="firstName" className="block mb-2 text-sm font-medium text-gray-700">
-                Prénom
-              </label>
-              <div className="relative">
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  placeholder="Votre prénom"
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={19} color="#AFBACA" />
-                </div>
-              </div>
-            </div>
-            {/* Last Name Input */}
-            <div className="relative">
-              <label htmlFor="lastName" className="block mb-2 text-sm font-medium text-gray-700">
-                Nom
-              </label>
-              <div className="relative">
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  placeholder="Votre nom"
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={19} color="#AFBACA" />
-                </div>
-              </div>
-            </div>
-            {/* Email Input */}
-            <div className="relative">
-              <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <div className="relative">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Votre email"
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={19} color="#AFBACA" />
-                </div>
-              </div>
-            </div>
-            {/* Password Input */}
-            <div className="relative">
-              <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-700">
-                Mot de passe
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Votre mot de passe"
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200 transition duration-300"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={19} color="#AFBACA" />
-                </div>
-              </div>
-            </div>
-            {/* Error Message */}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          {/* Header avec dégradé */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 py-8 px-8 text-center">
+            <h2 className="text-3xl font-extrabold text-white">
+              Créer un compte
+            </h2>
+            <p className="mt-2 text-gray-300">
+              Rejoignez-nous et profitez de nos services
+            </p>
+          </div>
+
+          <div className="p-8">
+            {/* Message d'erreur */}
             {errorMessage && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl">
+              <div className="mb-6 bg-red-50 text-red-600 p-4 rounded-xl flex items-center">
+                <AlertCircle size={20} className="mr-2 flex-shrink-0" />
                 <p>{errorMessage}</p>
               </div>
             )}
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Inscription en cours...' : 'S\'inscrire'}
-            </button>
-            {/* Login Link */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                Vous avez déjà un compte ?{' '}
-                <button
-                  onClick={handleLoginClick}
-                  className="text-blue-600 hover:underline transition duration-300 cursor-pointer bg-transparent border-none p-0"
-                >
-                  Connectez-vous
-                </button>
-              </p>
-            </div>
-          </form>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Nom et prénom côte à côte sur desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* First Name Input */}
+                <div className="space-y-2">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                    Prénom
+                  </label>
+                  <div className={`relative transition-all duration-300 ${focusedField === 'firstName' ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      placeholder="Votre prénom"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition duration-300"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField('firstName')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User size={20} className={`transition-colors duration-300 ${focusedField === 'firstName' ? 'text-blue-500' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Last Name Input */}
+                <div className="space-y-2">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                    Nom
+                  </label>
+                  <div className={`relative transition-all duration-300 ${focusedField === 'lastName' ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}>
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      placeholder="Votre nom"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition duration-300"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField('lastName')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <UserCircle size={20} className={`transition-colors duration-300 ${focusedField === 'lastName' ? 'text-blue-500' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email Input */}
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Adresse email
+                </label>
+                <div className={`relative transition-all duration-300 ${focusedField === 'email' ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="nom@exemple.com"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition duration-300"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail size={20} className={`transition-colors duration-300 ${focusedField === 'email' ? 'text-blue-500' : 'text-gray-400'}`} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Password Input */}
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Mot de passe
+                </label>
+                <div className={`relative transition-all duration-300 ${focusedField === 'password' ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Minimum 8 caractères"
+                    className="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition duration-300"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock size={20} className={`transition-colors duration-300 ${focusedField === 'password' ? 'text-blue-500' : 'text-gray-400'}`} />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-300"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                
+                {/* Indicateur de force du mot de passe */}
+                {formData.password && (
+                  <div className="mt-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex space-x-1 h-1 w-full rounded-full overflow-hidden">
+                        {[1, 2, 3, 4].map((segment) => (
+                          <div 
+                            key={segment}
+                            className={`h-full w-1/4 transition-colors duration-300 bg-${
+                              passwordStrength.strength >= segment 
+                                ? getStrengthColor(passwordStrength.strength) 
+                                : 'gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className={`ml-2 text-xs font-medium text-${getStrengthColor(passwordStrength.strength)}`}>
+                        {passwordStrength.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Utilisez au moins 8 caractères avec des lettres majuscules, des chiffres et des symboles.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 focus:outline-none transition duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Inscription en cours...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    Créer mon compte
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </span>
+                )}
+              </button>
+
+              {/* Login Link */}
+              <div className="text-center mt-6">
+                <p className="text-sm text-gray-600">
+                  Vous avez déjà un compte ?{' '}
+                  <button
+                    type="button"
+                    onClick={handleLoginClick}
+                    className="font-medium text-blue-600 hover:text-blue-500 transition"
+                  >
+                    Connectez-vous
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

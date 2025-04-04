@@ -18,19 +18,19 @@ const Home = () => {
   const mediaCollection = [
     {
       type: 'image',
-      src: '/uploads/camioneuse.jpg',
+      src: 'camioneuse.jpg',
       alt: 'Modèle portant un hoodie',
       title: 'Hoodies Premium'
     },
     {
       type: 'image',
-      src: '/uploads/T Shirt.jpg',
+      src: 'T Shirt.jpg',
       alt: 'Modèle portant un ensemble sportswear',
       title: 'Ensembles Sportswear'
     },
     {
       type: 'image',
-      src: '/uploads/PullBleu.jpg',
+      src: 'PullBleu.jpg',
       alt: 'Modèle portant un ensemble sportswear',
       title: 'Ensembles Sportswear'
     },
@@ -41,19 +41,19 @@ const Home = () => {
   const dropdownImages = [
     {
       type: 'image',
-      src: '/uploads/product-hoodie.jpg',
+      src: 'product-hoodie.jpg',
       alt: 'Hoodie noir sur fond blanc',
       index: 0
     },
     {
       type: 'image',
-      src: '/uploads/product-tshirt.jpg',
+      src: 'product-tshirt.jpg',
       alt: 'T-shirt blanc sur fond neutre',
       index: 1
     },
     {
       type: 'image',
-      src: '/uploads/product-sneakers.jpg',
+      src: 'product-sneakers.jpg',
       alt: 'Basket streetwear sur fond blanc',
       index: 2
     },
