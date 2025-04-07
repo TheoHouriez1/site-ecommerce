@@ -155,7 +155,7 @@ const CookieConsentComponent = () => {
           animate="visible"
           exit="exit"
         >
-          <div className="bg-white rounded-2xl shadow-xl p-4 border border-gray-100">
+          <div className="bg-white rounded-lg shadow-xl p-4 border border-gray-100">
             <div className="flex justify-between items-start mb-3">
               <h3 className="text-lg font-semibold text-gray-900">Paramètres des cookies</h3>
               <motion.button
@@ -181,7 +181,7 @@ const CookieConsentComponent = () => {
               whileHover="hover"
               whileTap="tap"
               onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors w-full justify-between"
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-md transition-colors w-full justify-between"
             >
               <span className="flex items-center gap-1">
                 <Settings size={14} />
@@ -205,7 +205,7 @@ const CookieConsentComponent = () => {
                   exit="hidden"
                   className="mb-4"
                 >
-                  <div className="space-y-3 bg-gray-50 p-3 rounded-lg">
+                  <div className="space-y-3 bg-gray-50 p-3 rounded-md">
                     {/* Cookie nécessaires - toujours activés */}
                     <div className="flex justify-between items-center">
                       <div>
@@ -229,7 +229,7 @@ const CookieConsentComponent = () => {
                         whileTap="tap"
                         onClick={() => handleTogglePreference('analytics')}
                         className={`w-10 h-5 rounded-full relative transition-colors ${
-                          cookiePreferences.analytics ? 'bg-gray-900' : 'bg-gray-300'
+                          cookiePreferences.analytics ? 'bg-black' : 'bg-gray-300'
                         }`}
                       >
                         <motion.div 
@@ -258,7 +258,7 @@ const CookieConsentComponent = () => {
                         whileTap="tap"
                         onClick={() => handleTogglePreference('preferences')}
                         className={`w-10 h-5 rounded-full relative transition-colors ${
-                          cookiePreferences.preferences ? 'bg-gray-900' : 'bg-gray-300'
+                          cookiePreferences.preferences ? 'bg-black' : 'bg-gray-300'
                         }`}
                       >
                         <motion.div 
@@ -286,7 +286,7 @@ const CookieConsentComponent = () => {
                 whileHover="hover"
                 whileTap="tap"
                 onClick={rejectAllCookies}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex-1 flex items-center justify-center gap-1"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex-1 flex items-center justify-center gap-1"
               >
                 <X size={16} />
                 Refuser
@@ -298,7 +298,7 @@ const CookieConsentComponent = () => {
                   whileHover="hover"
                   whileTap="tap"
                   onClick={navigateToPrivacyPolicy}
-                  className="px-4 py-2 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-gray-800 rounded-xl transition-colors flex-1 flex items-center justify-center gap-1"
+                  className="px-4 py-2 text-sm font-medium text-gray-100 bg-gray-700 hover:bg-gray-800 rounded-md transition-colors flex-1 flex items-center justify-center gap-1"
                 >
                   <Settings size={16} />
                   Savoir plus
@@ -310,7 +310,7 @@ const CookieConsentComponent = () => {
                 whileHover="hover"
                 whileTap="tap"
                 onClick={acceptAllCookies}
-                className="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-black rounded-xl transition-colors flex-1 flex items-center justify-center gap-1"
+                className="px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-md transition-colors flex-1 flex items-center justify-center gap-1"
               >
                 <Check size={16} />
                 Accepter tout

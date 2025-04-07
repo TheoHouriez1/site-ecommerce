@@ -38,13 +38,13 @@ const FooterComponent = () => {
               Notre mission est de vous proposer des vêtements de qualité, tendance et accessibles pour toutes les occasions.
             </p>
             <div className="flex space-x-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 transition-colors duration-300">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors duration-300">
                 <Facebook size={20} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 transition-colors duration-300">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors duration-300">
                 <Instagram size={20} />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 transition-colors duration-300">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors duration-300">
                 <Twitter size={20} />
               </a>
             </div>
@@ -57,7 +57,7 @@ const FooterComponent = () => {
               <li>
                 <button 
                   onClick={() => navigate('/conditions-generales')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 flex items-center"
+                  className="text-gray-600 hover:text-black transition-colors duration-300 flex items-center"
                 >
                   <ChevronRight size={16} className="mr-1" />
                   <span>Conditions générales de vente</span>
@@ -66,7 +66,7 @@ const FooterComponent = () => {
               <li>
                 <button 
                   onClick={() => navigate('/politique-confidentialite')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 flex items-center"
+                  className="text-gray-600 hover:text-black transition-colors duration-300 flex items-center"
                 >
                   <ChevronRight size={16} className="mr-1" />
                   <span>Politique de confidentialité</span>
@@ -75,7 +75,7 @@ const FooterComponent = () => {
               <li>
                 <button 
                   onClick={() => navigate('/mentions-legales')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 flex items-center"
+                  className="text-gray-600 hover:text-black transition-colors duration-300 flex items-center"
                 >
                   <ChevronRight size={16} className="mr-1" />
                   <span>Mentions légales</span>
@@ -84,7 +84,7 @@ const FooterComponent = () => {
               <li>
                 <button 
                   onClick={() => navigate('/livraison')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 flex items-center"
+                  className="text-gray-600 hover:text-black transition-colors duration-300 flex items-center"
                 >
                   <ChevronRight size={16} className="mr-1" />
                   <span>Livraison et retours</span>
@@ -93,7 +93,7 @@ const FooterComponent = () => {
               <li>
                 <button 
                   onClick={() => navigate('/faq')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors duration-300 flex items-center"
+                  className="text-gray-600 hover:text-black transition-colors duration-300 flex items-center"
                 >
                   <ChevronRight size={16} className="mr-1" />
                   <span>FAQ</span>
@@ -178,12 +178,12 @@ const FooterComponent = () => {
                   placeholder="Votre adresse email" 
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  className="px-4 py-2 rounded-l-xl w-full md:w-64 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="px-4 py-2 rounded-l-md w-full md:w-64 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
                   required
                 />
                 <button 
                   type="submit" 
-                  className="bg-gray-900 text-white px-4 py-2 rounded-r-xl hover:bg-gray-800 transition-colors duration-300"
+                  className="bg-black text-white px-4 py-2 rounded-r-md hover:bg-gray-800 transition-colors duration-300"
                 >
                   S'inscrire
                 </button>

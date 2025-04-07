@@ -41,7 +41,7 @@ class ProductType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new File([
-                        "maxSize" => "1024k",
+                        "maxSize" => "1024444k",
                         "mimeTypes" => [
                             'image/jpg',
                             'image/png',
@@ -57,7 +57,7 @@ class ProductType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new File([
-                        "maxSize" => "1024k",
+                        "maxSize" => "1024444k",
                         "mimeTypes" => [
                             'image/jpg',
                             'image/png',
@@ -73,7 +73,7 @@ class ProductType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new File([
-                        "maxSize" => "1024k",
+                        "maxSize" => "1024444k",
                         "mimeTypes" => [
                             'image/jpg',
                             'image/png',

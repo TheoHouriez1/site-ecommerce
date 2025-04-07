@@ -30,7 +30,7 @@ function App() {
         <Route path="/register" element={<RegisterComponent />} />
         <Route path="/productcard" element={<ProductCard />} />
         <Route path="/cart" element={<StripeCart />} />
-        <Route path="/pannier" element={<PannierPages />} />
+        <Route path="/panier" element={<PannierPages />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/products" element={<AdminProducts />} />
@@ -43,7 +43,7 @@ function App() {
         <Route path="/orders" element={<UserOrder />} />
         <Route path="/politique-confidentialite" element={<PrivacyPolicyPage />} />
         <Route path="/faq" element={<FAQPage />} />
-        <Route path="/guide-taille" element={<GuideTaille />} />
+        <Route path="/guide-tailles" element={<GuideTaille />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </HashRouter>

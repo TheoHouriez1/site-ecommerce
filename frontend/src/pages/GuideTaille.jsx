@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { NavbarComponent } from '../components/NavBarComponents';
 import FooterComponent from '../components/FooterComponent';
 import CookieConsentComponent from '../components/CookieConsentComponent';
 import { 
@@ -243,18 +242,29 @@ const GuideTaille = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavbarComponent />
+      {/* Breadcrumb Navigation */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4 py-4 text-sm">
+          <div className="flex items-center space-x-2 text-gray-500">
+            <button onClick={() => window.location.href='/'} className="hover:text-black transition-colors">
+              Accueil
+            </button>
+            <span>/</span>
+            <span className="text-black font-medium">Guide des tailles</span>
+          </div>
+        </div>
+      </div>
       
       {/* Hero Section */}
-      <div className="pt-24 pb-8">
+      <div className="pt-8 pb-8">
         <div className="container mx-auto px-4">
           <motion.div 
-            className="bg-white rounded-2xl shadow-lg overflow-hidden"
+            className="bg-white rounded-lg shadow-md overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="relative h-48 md:h-64 bg-gray-900">
+            <div className="relative h-48 md:h-64 bg-black">
               {/* Background image */}
               
               {/* Hero Text */}
@@ -286,9 +296,9 @@ const GuideTaille = () => {
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => setActiveCategory('hauts')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${
                     activeCategory === 'hauts' 
-                      ? 'bg-gray-900 text-white' 
+                      ? 'bg-black text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -301,9 +311,9 @@ const GuideTaille = () => {
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => setActiveCategory('bas')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${
                     activeCategory === 'bas' 
-                      ? 'bg-gray-900 text-white' 
+                      ? 'bg-black text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -316,9 +326,9 @@ const GuideTaille = () => {
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => setActiveCategory('chaussures')}
-                  className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${
                     activeCategory === 'chaussures' 
-                      ? 'bg-gray-900 text-white' 
+                      ? 'bg-black text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -338,7 +348,7 @@ const GuideTaille = () => {
                   onClick={() => setActiveGender('hommes')}
                   className={`px-6 py-2 rounded-full flex items-center gap-2 ${
                     activeGender === 'hommes' 
-                      ? 'bg-gray-900 text-white' 
+                      ? 'bg-black text-white' 
                       : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
@@ -353,7 +363,7 @@ const GuideTaille = () => {
                   onClick={() => setActiveGender('femmes')}
                   className={`px-6 py-2 rounded-full flex items-center gap-2 ${
                     activeGender === 'femmes' 
-                      ? 'bg-gray-900 text-white' 
+                      ? 'bg-black text-white' 
                       : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
@@ -368,7 +378,7 @@ const GuideTaille = () => {
       
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - How to Measure */}
           <motion.div 
             variants={containerVariants}
@@ -378,7 +388,7 @@ const GuideTaille = () => {
           >
             <motion.div 
               variants={itemVariants}
-              className="bg-white rounded-xl shadow-md overflow-hidden mb-6"
+              className="bg-white rounded-lg shadow-md overflow-hidden mb-6"
             >
               <div 
                 className="bg-gray-100 p-4 flex justify-between items-center cursor-pointer"
@@ -425,10 +435,10 @@ const GuideTaille = () => {
                         </div>
                       ))}
                       
-                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
                         <div className="flex items-start gap-2">
-                          <Info size={18} className="text-blue-600 flex-shrink-0 mt-1" />
-                          <p className="text-sm text-blue-800">
+                          <Info size={18} className="text-black flex-shrink-0 mt-1" />
+                          <p className="text-sm text-gray-700">
                             Utilisez un mètre ruban souple et tenez-vous droit mais détendu pour des mesures précises.
                           </p>
                         </div>
@@ -442,7 +452,7 @@ const GuideTaille = () => {
             {/* FAQs Accordion */}
             <motion.div 
               variants={itemVariants}
-              className="bg-white rounded-xl shadow-md overflow-hidden"
+              className="bg-white rounded-lg shadow-md overflow-hidden"
             >
               <div className="bg-gray-100 p-4">
                 <h3 className="text-lg font-medium">Questions fréquentes</h3>
@@ -495,7 +505,7 @@ const GuideTaille = () => {
                   whileHover="hover"
                   whileTap="tap"
                   onClick={() => window.location.href = '/contact'}
-                  className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                  className="w-full px-4 py-2 bg-black text-white rounded-md flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
                 >
                   Contacter le service client
                   <motion.div
@@ -518,9 +528,9 @@ const GuideTaille = () => {
           >
             <motion.div 
               variants={itemVariants}
-              className="bg-white rounded-xl shadow-md overflow-hidden mb-6"
+              className="bg-white rounded-lg shadow-md overflow-hidden mb-6"
             >
-              <div className="p-4 bg-gray-900 text-white">
+              <div className="p-4 bg-black text-white">
                 <h2 className="text-xl font-medium flex items-center gap-2">
                   {activeCategory === 'hauts' && <Shirt size={20} />}
                   {activeCategory === 'bas' && <UserRoundSearch size={20} />}
@@ -537,7 +547,7 @@ const GuideTaille = () => {
                     placeholder="Rechercher une taille..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
                   />
                   <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
                   
@@ -583,7 +593,7 @@ const GuideTaille = () => {
                           <th className="py-3 px-4 text-left font-medium text-gray-700">EU</th>
                           <th className="py-3 px-4 text-left font-medium text-gray-700">UK</th>
                           <th className="py-3 px-4 text-left font-medium text-gray-700">US</th>
-                          <th className="py-3 px-4 text-lefAt font-medium text-gray-700">Longueur (cm)</th>
+                          <th className="py-3 px-4 text-left font-medium text-gray-700">Longueur (cm)</th>
                         </>
                       )}
                     </tr>
@@ -649,7 +659,7 @@ const GuideTaille = () => {
             {/* Perfect Fit Tips */}
             <motion.div 
               variants={itemVariants}
-              className="bg-white rounded-xl shadow-md overflow-hidden"
+              className="bg-white rounded-lg shadow-md overflow-hidden"
             >
               <div className="p-4 bg-gray-100">
                 <h3 className="text-lg font-medium">Conseils pour un ajustement parfait</h3>
@@ -657,7 +667,7 @@ const GuideTaille = () => {
               
               <div className="p-4">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <h4 className="font-medium mb-2 flex items-center gap-2">
                       <Check size={18} className="text-green-600" />
                       Pour les t-shirts et sweats
@@ -667,7 +677,7 @@ const GuideTaille = () => {
                     </p>
                   </div>
                   
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <h4 className="font-medium mb-2 flex items-center gap-2">
                       <Check size={18} className="text-green-600" />
                       Pour les pantalons et jeans
@@ -677,7 +687,7 @@ const GuideTaille = () => {
                     </p>
                   </div>
                   
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <h4 className="font-medium mb-2 flex items-center gap-2">
                       <Check size={18} className="text-green-600" />
                       Pour les chaussures
@@ -687,7 +697,7 @@ const GuideTaille = () => {
                     </p>
                   </div>
                   
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <h4 className="font-medium mb-2 flex items-center gap-2">
                       <Check size={18} className="text-green-600" />
                       En cas de doute

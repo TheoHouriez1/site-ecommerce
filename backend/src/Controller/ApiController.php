@@ -44,7 +44,12 @@ class ApiController extends AbstractController
     public function getProducts(): JsonResponse
     {
         $products = $this->entityManager->getRepository(Product::class)->findAll();
-        $jsonContent = $this->serializer->serialize($products, 'json', ['groups' => 'product:read']);
+        $jsonContent = $this->serializer->serialize($products, 'json', [
+            'groups' => ['product:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();    
+            },
+        ]);
         
         return new JsonResponse($jsonContent, 200, [], true);
     }
