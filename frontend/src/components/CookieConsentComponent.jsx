@@ -217,67 +217,39 @@ const CookieConsentComponent = () => {
                       </div>
                     </div>
                     
-                    {/* Cookies analytiques */}
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">Cookies analytiques</h4>
-                        <p className="text-xs text-gray-500">Mesure de l'audience et des performances</p>
-                      </div>
-                      <motion.button
-                        variants={buttonVariants}
-                        whileHover="hover"
-                        whileTap="tap"
-                        onClick={() => handleTogglePreference('analytics')}
-                        className={`w-10 h-5 rounded-full relative transition-colors ${
-                          cookiePreferences.analytics ? 'bg-black' : 'bg-gray-300'
-                        }`}
-                      >
-                        <motion.div 
-                          className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full"
-                          animate={{ 
-                            x: cookiePreferences.analytics ? 20 : 0 
-                          }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 500,
-                            damping: 30
-                          }}
-                        />
-                      </motion.button>
-                    </div>
                     
-                    {/* Cookies de préférences */}
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">Cookies de préférences</h4>
-                        <p className="text-xs text-gray-500">Mémorisation de vos paramètres</p>
+                      {/* Cookies de préférences */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900">Cookies de préférences</h4>
+                          <p className="text-xs text-gray-500">Mémorisation de vos paramètres</p>
+                        </div>
+                        <motion.button
+                          variants={buttonVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                          onClick={() => handleTogglePreference('preferences')}
+                          className={`w-10 h-5 rounded-full relative transition-colors ${
+                            cookiePreferences.preferences ? 'bg-black' : 'bg-gray-300'
+                          }`}
+                        >
+                          <motion.div 
+                            className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full"
+                            animate={{ 
+                              x: cookiePreferences.preferences ? 20 : 0 
+                            }}
+                            transition={{
+                              type: 'spring',
+                              stiffness: 500,
+                              damping: 30
+                            }}
+                          />
+                        </motion.button>
                       </div>
-                      <motion.button
-                        variants={buttonVariants}
-                        whileHover="hover"
-                        whileTap="tap"
-                        onClick={() => handleTogglePreference('preferences')}
-                        className={`w-10 h-5 rounded-full relative transition-colors ${
-                          cookiePreferences.preferences ? 'bg-black' : 'bg-gray-300'
-                        }`}
-                      >
-                        <motion.div 
-                          className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full"
-                          animate={{ 
-                            x: cookiePreferences.preferences ? 20 : 0 
-                          }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 500,
-                            damping: 30
-                          }}
-                        />
-                      </motion.button>
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             
             {/* Boutons d'action */}
             <div className="flex flex-col sm:flex-row gap-2">

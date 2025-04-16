@@ -1,8 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from "react-router-dom";
-import { LoginComponent } from './components/LoginComponent.tsx';
 import HomePage from './pages/HomePage.jsx';
-import { RegisterComponent } from './components/RegisterComponent.jsx';
 import ProductCard from './pages/ProductCard.jsx';
 import StripeCart from './components/Cart.tsx';
 import PannierPages from './pages/PannierPages.jsx';
@@ -26,8 +24,6 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginComponent />} />
-        <Route path="/register" element={<RegisterComponent />} />
         <Route path="/productcard" element={<ProductCard />} />
         <Route path="/cart" element={<StripeCart />} />
         <Route path="/panier" element={<PannierPages />} />

@@ -1,6 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { NavbarComponent } from '../components/NavBarComponents';
 import { User, Mail, Key, Shield, CheckCircle, XCircle } from 'lucide-react';
 
 // Composant pour la carte d'information utilisateur
@@ -32,7 +32,6 @@ const UserProfile = ({ user }) => (
         </span>
       </div>
     </div>
-
     <div className="grid md:grid-cols-2 gap-4 mb-8">
       <UserInfoCard 
         icon={User} 
@@ -55,7 +54,6 @@ const UserProfile = ({ user }) => (
         value={Array.isArray(user?.roles) ? user.roles.join(', ') : 'Aucun rôle'} 
       />
     </div>
-
     <div className="bg-gray-50 rounded-xl p-6">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">Statut du compte</h2>
       <div className="flex items-center space-x-3">
@@ -84,13 +82,27 @@ const UserProfile = ({ user }) => (
 // Composant principal de la page de profil
 const ProfilePage = () => {
   const { user } = useAuth();
-
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavbarComponent />
-      {/* Ajout d'un padding-top pour compenser la navbar fixe */}
-      <div className="pt-16">
-        <div className="container mx-auto px-4 py-12">
+      
+      {/* Breadcrumb Navigation - Ajouté comme dans ProductCard */}
+      <div className="bg-white border-b border-gray-200 mb-6">
+        <div className="container mx-auto px-4 py-4 text-sm">
+          <div className="flex items-center space-x-2 text-gray-500">
+            <button onClick={() => navigate('/')} className="hover:text-black transition-colors">
+              Accueil
+            </button>
+            <span>/</span>
+            <span className="text-black font-medium">Mon Profil</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Contenu principal avec padding-top ajusté */}
+      <div className="pt-4">
+        <div className="container mx-auto px-4 py-6">
           {user && user.isAuthenticated ? (
             <div className="max-w-5xl mx-auto">
               <UserProfile user={user} />
