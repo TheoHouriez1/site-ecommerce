@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useCart } from '../components/CartContext';
 import {
   Mail, Lock, EyeOff, Eye, AlertCircle,
   Check, X, Loader2, ArrowLeft
 } from 'lucide-react';
+
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 const LoginComponent = ({ onClose, onRegisterClick }) => {
   const [email, setEmail] = useState('');
@@ -20,10 +23,11 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTimeLeft, setBlockTimeLeft] = useState(0);
-  const BLOCK_DURATION = 900; // 15 minutes en secondes
+  const BLOCK_DURATION = 900;
   const MAX_ATTEMPTS = 5;
 
   const { login } = useAuth();
+  const { setUserId, syncCartToServer } = useCart();
   const navigate = useNavigate();
   const modalRef = useRef();
   const emailInputRef = useRef();
@@ -32,8 +36,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
     if (emailInputRef.current) {
       setTimeout(() => emailInputRef.current.focus(), 100);
     }
-
-    // Vérifie si un blocage est en cours (depuis le localStorage)
     const blockUntil = localStorage.getItem('login_block_until');
     if (blockUntil) {
       const now = Date.now();
@@ -114,30 +116,36 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+            'X-API-TOKEN': API_TOKEN
           },
           credentials: 'include',
           body: JSON.stringify({ email, password }),
         }
       );
 
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error('Réponse du serveur invalide');
-      }
+      const data = await response.json();
 
       if (response.ok && data?.id) {
-        const loginSuccess = await login({
+        const userData = {
           id: data.id,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
           roles: data.roles,
           isAuthenticated: true
-        }, rememberMe);
+        };
+
+        const loginSuccess = await login(userData, rememberMe);
 
         if (loginSuccess) {
+          try {
+            setUserId(data.id);
+            await syncCartToServer();
+            console.log('Panier synchronisé avec succès!');
+          } catch (error) {
+            console.error('Erreur lors de la synchronisation du panier:', error);
+          }
+
           setSuccessMessage('Connexion réussie !');
           setTimeout(() => {
             onClose && onClose();

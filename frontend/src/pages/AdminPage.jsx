@@ -17,6 +17,8 @@ const Admin = () => {
   const [productCount, setProductCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
 
+  const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+
   useEffect(() => {
     if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
       alert('Vous n\'avez pas la permission d\'accéder à cette page');
@@ -24,10 +26,14 @@ const Admin = () => {
       return;
     }
 
-    // Récupérer le nombre de produits
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/product`);
+        const response = await fetch(`${BACKEND_URL}/api/product`, {
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-TOKEN": API_TOKEN
+          }
+        });
         if (!response.ok) throw new Error('Erreur de récupération des produits');
         const products = await response.json();
         setProductCount(products.length);
@@ -36,11 +42,14 @@ const Admin = () => {
       }
     };
 
-    // Récupérer le nombre de commandes (à implémenter selon votre backend)
     const fetchOrders = async () => {
       try {
-        // Remplacez cette URL par votre endpoint de récupération des commandes
-        const response = await fetch(`${BACKEND_URL}/orders`);
+        const response = await fetch(`${BACKEND_URL}/api/orders`, {
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-TOKEN": API_TOKEN
+          }
+        });
         if (!response.ok) throw new Error('Erreur de récupération des commandes');
         const orders = await response.json();
         setOrderCount(orders.length);
@@ -51,7 +60,7 @@ const Admin = () => {
 
     fetchProducts();
     fetchOrders();
-  }, [user, navigate]);
+  }, [user, navigate, API_TOKEN]);
 
   if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
     return null;

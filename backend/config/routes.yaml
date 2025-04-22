@@ -8,8 +8,3 @@ controllers:
 dashboard:
     path: /admin
     controller: App\Controller\Admin\DashboardController::index
-
-api_login:
-    path: /api/login
-    controller: Lexik\Bundle\JWTAuthenticationBundle\Controller\AuthenticationController::login
-    methods: [POST]

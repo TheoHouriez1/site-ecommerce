@@ -11,7 +11,6 @@ import {
   AlertCircle,
   Sliders
 } from 'lucide-react';
-import { CartContext } from '../components/CartContext';
 import { NavbarComponent } from '../components/NavBarComponents';
 
 const ProductListingPage = () => {
@@ -33,8 +32,16 @@ const ProductListingPage = () => {
   const [categories, setCategories] = useState(['Chaussures', 'Vêtements', 'Accessoires']);
   // États supprimés
 
+  // Récupération des variables d'environnement
+  const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+
   useEffect(() => {
-    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-TOKEN": API_TOKEN
+      }
+    })
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
@@ -42,7 +49,7 @@ const ProductListingPage = () => {
       .then(setProducts)
       .catch((error) => setError(error.message));
   }, []);
-
+  
   const handleProductClick = (product) => {
     const productData = {
       id: product.id,
@@ -470,4 +477,4 @@ const ProductListingPage = () => {
   );
 };
 
-export default ProductListingPage;  
+export default ProductListingPage;

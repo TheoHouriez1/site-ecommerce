@@ -14,6 +14,8 @@ const ContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
+  const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+
   const validateForm = () => {
     const errors = {};
     
@@ -68,7 +70,8 @@ const ContactPage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          "Accept": "application/json",
+          "X-API-TOKEN": API_TOKEN
         },
         body: JSON.stringify({
           name: formData.name,

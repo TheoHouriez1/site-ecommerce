@@ -15,16 +15,20 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        // Active l'authenticator seulement si le header est présent
-        return $request->headers->has('X-API-TOKEN');
+        // Vérifie si la route commence par /api/
+        return strpos($request->getPathInfo(), '/api/') === 0;
     }
 
     public function authenticate(Request $request): Passport
     {
         $token = $request->headers->get('X-API-TOKEN');
 
+        if (!$token) {
+            throw new AuthenticationException('Token manquant.');
+        }
+
         if ($token !== $_ENV['API_ACCESS_TOKEN']) {
-            throw new AuthenticationException('Invalid API token');
+            throw new AuthenticationException('Token invalide.');
         }
 
         return new SelfValidatingPassport(new UserBadge('api_user'));
@@ -32,13 +36,19 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // Authentification OK, on laisse passer
         return null;
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        // Token invalide ou manquant
-        return new Response('Unauthorized - Invalid token', 401);
+        return new Response(
+            json_encode([
+                'success' => false,
+                'error' => 'Unauthorized - Token manquant ou invalide',
+                'message' => $exception->getMessage()
+            ]),
+            Response::HTTP_UNAUTHORIZED,
+            ['Content-Type' => 'application/json']
+        );
     }
 }

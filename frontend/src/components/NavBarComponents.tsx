@@ -14,7 +14,7 @@ import {
   Boxes,
   Search
 } from 'lucide-react';
-import { CartContext } from './CartContext.tsx';
+import { useCart } from './CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import SeachComponent from './SeachComponent.tsx';
 import LoginComponent from './LoginComponent'; 
@@ -23,7 +23,7 @@ import RegisterComponent from './RegisterComponent';
 export const NavbarComponent = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { cart } = useContext(CartContext);
+  const { cart } = useCart();
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -205,20 +205,6 @@ export const NavbarComponent = () => {
                     <span>Administration</span>
                   </button>
                 )}
-                <button 
-                  onClick={() => {
-                    navigate('/settings');
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`flex items-center space-x-3 w-full px-4 py-2 text-left transition-colors ${
-                    isScrolled 
-                      ? 'text-gray-700 hover:bg-gray-50' 
-                      : 'text-white hover:bg-gray-800'
-                  }`}
-                >
-                  <Settings size={18} className={isScrolled ? "text-gray-500" : "text-gray-400"} />
-                  <span>Paramètres</span>
-                </button>
                 <div className={`border-t mt-2 pt-2 ${isScrolled ? 'border-gray-200' : 'border-gray-700'}`}>
                   <button 
                     onClick={handleLogout}
@@ -289,16 +275,6 @@ export const NavbarComponent = () => {
               
               {/* Navigation desktop */}
               <div className="hidden md:flex items-center space-x-8">
-                <button 
-                  onClick={() => navigate('/products')}
-                  className={`text-base font-medium transition-colors duration-300 ${
-                    isScrolled 
-                      ? 'text-gray-800 hover:text-gray-500' 
-                      : 'text-white hover:text-gray-200'
-                  }`}
-                >
-                  Produits
-                </button>
                 <button 
                   onClick={() => navigate('/contact')}
                   className={`text-base font-medium transition-colors duration-300 ${

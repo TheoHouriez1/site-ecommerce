@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter, Routes, Route } from "react-router-dom";
 import HomePage from './pages/HomePage.jsx';
 import ProductCard from './pages/ProductCard.jsx';
-import StripeCart from './components/Cart.tsx';
+import StripeCart from './components/Cart.jsx';
 import PannierPages from './pages/PannierPages.jsx';
 import ProfilePage from './pages/ProfilePages.jsx';
 import Admin from './pages/AdminPage.jsx';

@@ -16,9 +16,9 @@ class Order
     #[Groups(['order:read'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\Column(nullable: true)]
     #[Groups(['order:read'])]
-    private ?User $id_user = null;
+    private ?int $id_user = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['order:read'])]
@@ -53,12 +53,12 @@ class Order
         return $this->id;
     }
 
-    public function getIdUser(): ?User
+    public function getIdUser(): ?int
     {
         return $this->id_user;
     }
 
-    public function setIdUser(?User $id_user): static
+    public function setIdUser(?int $id_user): static
     {
         $this->id_user = $id_user;
 

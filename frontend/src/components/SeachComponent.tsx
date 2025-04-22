@@ -128,7 +128,7 @@ const SearchComponent: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product")
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

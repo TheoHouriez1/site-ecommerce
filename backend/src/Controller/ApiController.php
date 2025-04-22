@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Entity\User;
 use App\Entity\Order;
+use App\Entity\CartItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -40,7 +41,7 @@ class ApiController extends AbstractController
         $this->slugger = $slugger;
     }
     
-    #[Route('/product', name: 'api_products', methods: ['GET'])]
+    #[Route('/api/product', name: 'api_products', methods: ['GET'])]
     public function getProducts(): JsonResponse
     {
         $products = $this->entityManager->getRepository(Product::class)->findAll();
@@ -54,7 +55,7 @@ class ApiController extends AbstractController
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
-    #[Route('/product/{id}', name: 'api_get_product', methods: ['GET'])]
+    #[Route('/api/product/{id}', name: 'api_get_product', methods: ['GET'])]
     public function getProduct(string $id): JsonResponse
     {
         $productId = (int) $id;
@@ -68,7 +69,7 @@ class ApiController extends AbstractController
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
-    #[Route('/editProduct/{id}', name: 'api_update_product', methods: ['POST'])]
+    #[Route('/api/editProduct/{id}', name: 'api_update_product', methods: ['POST'])]
     public function updateProduct(Request $request, int $id): JsonResponse
     {
         try {
@@ -341,6 +342,52 @@ class ApiController extends AbstractController
         }
     }
 
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    #[IsGranted('PUBLIC_ACCESS')]
+    public function login(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    {
+        try {
+            // Récupérer et décoder les données JSON
+            $data = json_decode($request->getContent(), true);
+            
+            if (!$data || !isset($data['email']) || !isset($data['password'])) {
+                return new JsonResponse(['error' => 'Email et mot de passe requis'], 400);
+            }
+            
+            // Rechercher l'utilisateur par email
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+            
+            if (!$user) {
+                return new JsonResponse(['error' => 'Identifiants incorrects'], 401);
+            }
+            
+            // Vérifier le mot de passe
+            if (!$passwordHasher->isPasswordValid($user, $data['password'])) {
+                return new JsonResponse(['error' => 'Identifiants incorrects'], 401);
+            }
+            
+            // Configurer la session
+            $request->getSession()->set('user_id', $user->getId());
+            
+            // Retourner les informations de l'utilisateur
+            return new JsonResponse([
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'roles' => $user->getRoles()
+            ]);
+        } catch (\Exception $e) {
+            // Log l'erreur pour débogage
+            error_log('Erreur de login: ' . $e->getMessage());
+            
+            return new JsonResponse([
+                'error' => 'Erreur de serveur',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     #[Route('/api/check-auth', name: 'api_check_auth', methods: ['GET'])]
     public function checkAuth(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -378,14 +425,13 @@ class ApiController extends AbstractController
 
 
     #[Route('/api/create-order', name: 'api_create_order', methods: ['POST'])]
-    #[IsGranted('PUBLIC_ACCESS')]  // 🔹 Ajoute ça pour désactiver la sécurité
-
+    #[IsGranted('PUBLIC_ACCESS')]
     public function createOrder(Request $request, EntityManagerInterface $em): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
     
-            // 🔹 Vérification des données reçues
+            // Vérification des données reçues
             if (!$data) {
                 return new JsonResponse(['error' => 'Données invalides'], 400);
             }
@@ -396,8 +442,9 @@ class ApiController extends AbstractController
             $address = $data['address'] ?? null;
             $article = $data['article'] ?? null;
             $price = $data['price'] ?? null;
+            $userId = $data['id_user'] ?? null; // Récupération de l'ID utilisateur comme un simple entier
     
-            // 🔹 Vérifications détaillées
+            // Vérifications détaillées
             $errors = [];
             if (!$nom) $errors[] = 'Nom manquant';
             if (!$prenom) $errors[] = 'Prénom manquant';
@@ -410,7 +457,7 @@ class ApiController extends AbstractController
                 return new JsonResponse(['errors' => $errors], 400);
             }
     
-            // 🔹 Création de la commande
+            // Création de la commande
             $order = new Order();
             $order->setNom($nom);
             $order->setPrenom($prenom);
@@ -419,6 +466,11 @@ class ApiController extends AbstractController
             $order->setArticle($article);
             $order->setPrice((float)$price);
             $order->setDateCommande(new \DateTimeImmutable());
+            
+            // Stockage direct de l'ID utilisateur sans relation
+            if ($userId !== null) {
+                $order->setIdUser($userId);
+            }
     
             $em->persist($order);
             $em->flush();
@@ -445,7 +497,7 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/orders', name: 'api_orders', methods: ['GET'])]
+    #[Route('/api/orders', name: 'api_orders', methods: ['GET'])]
     public function getOrders(): JsonResponse
     {
         $orders = $this->entityManager->getRepository(Order::class)->findAll();
@@ -534,5 +586,132 @@ public function submit(Request $request, MailerInterface $mailer): JsonResponse
 
         return $response;
     }
+ }
+    #[Route('/api/cart/{userId}', name: 'api_cart_items', methods: ['GET'])]
+    public function getCartItems(int $userId): JsonResponse
+    {
+        $cartItems = $this->entityManager
+            ->getRepository(CartItem::class)
+            ->findBy(['userId' => $userId]);
+    
+        $productRepo = $this->entityManager->getRepository(Product::class);
+    
+        $data = [];
+    
+        foreach ($cartItems as $item) {
+            $product = $productRepo->find($item->getProductId());
+    
+            $data[] = [
+                'id' => $item->getId(),
+                'userId' => $item->getUserId(),
+                'productId' => $item->getProductId(),
+                'quantity' => $item->getQuantity(),
+                'name' => $product?->getName() ?? 'Produit inconnu',
+                'price' => $product?->getPrice() ?? 0,
+                'image' => $product?->getImage() ?? null,
+                'size' =>  $product?->GetSizes() ?? 0,
+            ];
+        }
+    
+        return new JsonResponse($data, 200);
+    }
+ 
+
+    #[Route('/api/cart/item/{id}', name: 'api_cart_delete_item', methods: ['DELETE'])]
+    public function deleteCartItem(int $id): JsonResponse
+    {
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->find($id);
+
+        if (!$cartItem) {
+            return new JsonResponse(['error' => 'Article introuvable dans le panier'], 404);
+        }
+
+        $this->entityManager->remove($cartItem);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Article supprimé du panier']);
+    }
+
+    #[Route('/api/cart/clear/{userId}', name: 'api_cart_clear', methods: ['DELETE'])]
+    public function clearCart(int $userId): JsonResponse
+    {
+        $items = $this->entityManager->getRepository(CartItem::class)->findBy(['userId' => $userId]);
+
+        foreach ($items as $item) {
+            $this->entityManager->remove($item);
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Panier vidé']);
+    }
+    #[Route('/api/cart/add', name: 'api_cart_add_item', methods: ['POST'])]
+    public function addToCart(Request $request): JsonResponse
+    {
+    $data = json_decode($request->getContent(), true);
+
+    if (!$data || !isset($data['userId'], $data['productId'], $data['quantity'])) {
+        return new JsonResponse(['error' => 'Paramètres manquants'], 400);
+    }
+
+    $userId = $data['userId'];
+    $productId = $data['productId'];
+    $quantity = $data['quantity'];
+
+    $cartItemRepo = $this->entityManager->getRepository(CartItem::class);
+
+    // Vérifie si l'item existe déjà pour ce user et produit
+    $existingItem = $cartItemRepo->findOneBy([
+        'userId' => $userId,
+        'productId' => $productId
+    ]);
+
+    if ($existingItem) {
+        // On incrémente juste la quantité
+        $existingItem->setQuantity($existingItem->getQuantity() + $quantity);
+    } else {
+        // Sinon on crée un nouvel item
+        $cartItem = new CartItem();
+        $cartItem->setUserId($userId);
+        $cartItem->setProductId($productId);
+        $cartItem->setQuantity($quantity);
+
+        $this->entityManager->persist($cartItem);
+    }
+
+    $this->entityManager->flush();
+
+    return new JsonResponse(['success' => true, 'message' => 'Produit ajouté au panier']);
+    }
+    
+    #[Route('/api/cart/update/{id}', name: 'api_cart_update_item', methods: ['PUT'])]
+    public function updateCartItem(int $id, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $newQuantity = $data['quantity'] ?? null;
+
+        if ($newQuantity === null || $newQuantity < 1) {
+            return new JsonResponse(['error' => 'Quantité invalide'], 400);
+        }
+
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->find($id);
+
+        if (!$cartItem) {
+            return new JsonResponse(['error' => 'Article introuvable dans le panier'], 404);
+        }
+
+        $cartItem->setQuantity($newQuantity);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Quantité mise à jour']);
+    }
+
+    #[Route('/api/ping', name: 'api_ping', methods: ['GET'])]
+    public function ping(): JsonResponse
+    {
+    return new JsonResponse([
+        'success' => true,
+        'message' => 'Token valide, accès autorisé ✅'
+    ]);
 }
 }

@@ -1,12 +1,8 @@
 <a id="readme-top"></a>
-
 <!-- PROJECT SHIELDS -->
 [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![Status][status-shield]][status-url]
+[![Done][done-shield]][done-url]
 
 <!-- PROJECT LOGO -->
 <br />
@@ -57,7 +53,7 @@
 <!-- ABOUT THE PROJECT -->
 ## À propos du projet
 
-[![Capture d'écran du produit][product-screenshot]](https://demo-ecommerce.votredomaine.com)
+[![Capture d'écran du produit][product-screenshot]](http://51.159.28.149/theo/site-ecommerce/frontend/dist/)
 
 Ce projet est une solution e-commerce complète qui combine la puissance de Symfony pour le backend et la flexibilité de React pour le frontend. L'architecture est basée sur une séparation claire entre le serveur (backend) et le client (frontend) qui communiquent via des API RESTful.
 
@@ -78,8 +74,7 @@ Ce projet utilise les frameworks et bibliothèques suivants:
 * [![Symfony][Symfony.com]][Symfony-url]
 * [![React][React.js]][React-url]
 * [![MySQL][MySQL.com]][MySQL-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![Docker][Docker.com]][Docker-url]
+* [![Tailwind CSS][Tailwind.com]][Tailwind-url]
 * [![JWT][JWT.io]][JWT-url]
 * [![Webpack][Webpack.js]][Webpack-url]
 
@@ -241,8 +236,6 @@ Pour déployer l'application en production:
 
 4. Déployer le backend Symfony sur votre serveur PHP
 
-_Pour plus d'exemples, veuillez consulter la [Documentation](https://github.com/your_username/ecommerce/wiki)_
-
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
 <!-- API ARCHITECTURE -->
@@ -314,45 +307,40 @@ N'oubliez pas de donner une étoile au projet ! Merci encore !
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
+<!-- LICENSE -->
+## Licence
+
+Distribué sous la licence MIT. Voir `LICENSE.txt` pour plus d'informations.
+
+<p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
 <!-- CONTACT -->
 ## Contact
 
-Théo Houriez- [@Théo Houriez](https://www.linkedin.com/in/th%C3%A9o-houriez-160756296/) - theohouriez1@gmail.com
+Théo Houriez - [@Théo Houriez](https://www.linkedin.com/in/th%C3%A9o-houriez-160756296/) - theohouriez1@gmail.com
 
 Lien du projet: [https://github.com/your_username/ecommerce](https://github.com/your_username/ecommerce)
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
-<!-- ACKNOWLEDGMENTS -->
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/your_username/ecommerce.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/badge/Contributors-1-brightgreen?style=for-the-badge
 [contributors-url]: https://github.com/your_username/ecommerce/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/your_username/ecommerce.svg?style=for-the-badge
-[forks-url]: https://github.com/your_username/ecommerce/network/members
-[stars-shield]: https://img.shields.io/github/stars/your_username/ecommerce.svg?style=for-the-badge
-[stars-url]: https://github.com/your_username/ecommerce/stargazers
-[issues-shield]: https://img.shields.io/github/issues/your_username/ecommerce.svg?style=for-the-badge
-[issues-url]: https://github.com/your_username/ecommerce/issues
-[license-shield]: https://img.shields.io/github/license/your_username/ecommerce.svg?style=for-the-badge
-[license-url]: https://github.com/your_username/ecommerce/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/your_username
-[product-screenshot]: images/screenshot.png
+[status-shield]: https://img.shields.io/badge/Status-Active-success?style=for-the-badge
+[status-url]: https://github.com/your_username/ecommerce
+[done-shield]: https://img.shields.io/badge/Completed-80%25-blue?style=for-the-badge
+[done-url]: https://github.com/your_username/ecommerce/issues
 
+[product-screenshot]: images/screenshot.png
 [Symfony.com]: https://img.shields.io/badge/Symfony-000000?style=for-the-badge&logo=symfony&logoColor=white
 [Symfony-url]: https://symfony.com/
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [MySQL.com]: https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white
 [MySQL-url]: https://www.mysql.com/
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[Docker.com]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
-[Docker-url]: https://www.docker.com/
+[Tailwind.com]: https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white
+[Tailwind-url]: https://tailwindcss.com/
 [JWT.io]: https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white
 [JWT-url]: https://jwt.io/
 [Webpack.js]: https://img.shields.io/badge/Webpack-8DD6F9?style=for-the-badge&logo=webpack&logoColor=black

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart,
@@ -13,13 +13,14 @@ import {
   Box,
   Truck
 } from 'lucide-react';
-import { CartContext } from '../components/CartContext';
+import { useCart } from '../components/CartContext';
+
 const BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
 
 const ProductCard = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext);
+  const { addToCart } = useCart();
   const {
     id,
     name,
@@ -32,7 +33,7 @@ const ProductCard = () => {
     category = "Vêtements",
     stock = 1
   } = location.state || {};
-  
+
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [isLiked, setIsLiked] = useState(false);
@@ -43,101 +44,63 @@ const ProductCard = () => {
   const [showShipping, setShowShipping] = useState(false);
   const [showReturns, setShowReturns] = useState(false);
   const [showAuthInfo, setShowAuthInfo] = useState(false);
-  
-  // Vérifier si le produit est en stock
+
   const isInStock = stock > 0;
 
   useEffect(() => {
-    // Scroll to top when component loads
     window.scrollTo(0, 0);
-    
     const processedUrls = [];
-    
-    // Fonction pour traiter et ajouter uniquement les images valides
-    const processImage = (img, label) => {
-      if (img && img !== null && typeof img === 'string') {
+    const processImage = (img) => {
+      if (img && typeof img === 'string') {
         const isFullUrl = img.startsWith('http://') || img.startsWith('https://');
-        const finalUrl = isFullUrl ? img : `${BASE_URL}${img}`;
-        console.log(`✔ ${label} chargée:`, finalUrl);
-        processedUrls.push(finalUrl);
-      } else {
-        console.warn(`⚠ ${label} absente ou null, ignorée`);
+        processedUrls.push(isFullUrl ? img : `${BASE_URL}${img}`);
       }
     };
-
-    // Traitement des images une par une
-    processImage(image, "Image principale");
-    processImage(image2, "Image 2");
-    processImage(image3, "Image 3");
-    
-    // Vérifier qu'il y a au moins une image, sinon ajouter une image par défaut
+    processImage(image);
+    processImage(image2);
+    processImage(image3);
     if (processedUrls.length === 0) {
       processedUrls.push("https://placehold.co/600x800?text=Image+non+disponible");
     }
-    
     setImageUrls(processedUrls);
   }, [image, image2, image3]);
 
   const handleQuantityChange = (change) => {
     const newQuantity = Math.max(1, quantity + change);
-    // Limiter la quantité au stock disponible
     setQuantity(Math.min(newQuantity, stock));
   };
 
   const handleAddToCart = () => {
-    if (!selectedSize && sizes && sizes.length > 0) {
+    if (!selectedSize && sizes?.length > 0) {
       alert('Veuillez sélectionner une taille');
       return;
     }
-    
     if (!isInStock) {
       alert('Ce produit est actuellement épuisé.');
       return;
     }
-    
-    addToCart({
-      id,
-      name: name,
-      price: price,
-      image: imageUrls[0],
-      quantity: quantity,
-      size: selectedSize,
-      stock: stock
-    });
+    addToCart(id, quantity, selectedSize);
     setShowAddedToCart(true);
     setTimeout(() => setShowAddedToCart(false), 2000);
   };
 
-  const handleWishlist = () => {
-    setIsLiked(!isLiked);
-  };
+  const handleWishlist = () => setIsLiked(!isLiked);
 
-  const goBack = () => {
-    navigate(-1);
-  };
+  const goBack = () => navigate(-1);
 
-  const dateActuelle = new Date();
-
-  function formaterDateAvecJoursAjoutes(date, joursAjoutes) {
+  const formaterDateAvecJoursAjoutes = (date, joursAjoutes) => {
     const nouvelleDate = new Date(date);
     nouvelleDate.setDate(nouvelleDate.getDate() + joursAjoutes);
-    
     const jour = String(nouvelleDate.getDate()).padStart(2, '0');
-    const mois = String(nouvelleDate.getMonth() + 1).padStart(2, '0'); 
+    const mois = String(nouvelleDate.getMonth() + 1).padStart(2, '0');
     return `${jour}/${mois}`;
-  }
-  
-  const received = formaterDateAvecJoursAjoutes(dateActuelle,0);
-  const prepared1 = formaterDateAvecJoursAjoutes(dateActuelle,2);
-  const prepared2 = formaterDateAvecJoursAjoutes(dateActuelle,3);
-  const delivered1 = formaterDateAvecJoursAjoutes(dateActuelle,6);
-  const delivered2 = formaterDateAvecJoursAjoutes(dateActuelle,7);
+  };
 
-  // Contenu pour la section de livraison estimée
+  const now = new Date();
   const deliveryDates = {
-    received: received,
-    prepared: prepared1 +' - '+ prepared2,
-    delivered: delivered1 +' - ' + delivered2
+    received: formaterDateAvecJoursAjoutes(now, 0),
+    prepared: `${formaterDateAvecJoursAjoutes(now, 2)} - ${formaterDateAvecJoursAjoutes(now, 3)}`,
+    delivered: `${formaterDateAvecJoursAjoutes(now, 6)} - ${formaterDateAvecJoursAjoutes(now, 7)}`
   };
 
   if (!id) {
@@ -160,7 +123,7 @@ const ProductCard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
+    
       {/* Breadcrumb Navigation */}
       <div className="bg-white border-b border-gray-200 mb-6">
         <div className="container mx-auto px-4 py-4 text-sm">

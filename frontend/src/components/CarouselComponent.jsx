@@ -8,7 +8,7 @@ const CarouselComponent = ({ onShopNowClick }) => {
   const collections = [
     {
       brand: 'Supreme',
-      // Image d'un hoodie Supreme porté
+  
       image: 'Screenshot 2025-04-07 092158.png',
       tagline: '"NE PORTE PAS DES VÊTEMENTS, PORTE DES HISTOIRES"',
       itemCount: '100+ ITEMS LIVE'

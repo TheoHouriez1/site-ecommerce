@@ -39,33 +39,40 @@ const UserOrder = () => {
   };
 
   useEffect(() => {
-    // Vérification si l'utilisateur est connecté
     if (!user || !user.isAuthenticated) {
       navigate('/login');
       return;
     }
+
     setLoading(true);
-    
-    // Récupérer d'abord tous les produits pour avoir les images
-    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
+
+    const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
+
+    const headers = {
+      'Authorization': `Bearer ${API_TOKEN}`
+    };
+
+    fetch("/api/product", {
+      headers
+    })
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
       })
       .then((productData) => {
         setProducts(productData);
-        
-        // Ensuite récupérer les commandes
-        return fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/orders");
+        return fetch("/api/orders", {
+          headers
+        });
       })
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
       })
       .then((data) => {
-        // Filtrer les commandes pour ne garder que celles de l'utilisateur connecté
+        // Filtrer les commandes par l'ID utilisateur au lieu de l'email
         const userOrders = data.filter(order => 
-          order.email.toLowerCase() === user.email.toLowerCase()
+          order.id_user === user.id
         );
         setOrders(userOrders);
         setLoading(false);
@@ -76,7 +83,6 @@ const UserOrder = () => {
       });
   }, [user, navigate]);
 
-  // Fonction pour trouver l'image du produit en fonction du nom
   const findProductImage = (productName) => {
     const product = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
     if (product && product.image) {
@@ -144,11 +150,9 @@ const UserOrder = () => {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-2xl sm:text-3xl font-medium text-gray-800">Mes Commandes</h1>
           <div className="flex items-center gap-4">
-            {/* Sort Dropdown */}
             <div className="relative">
               <select 
                 onChange={(e) => setSortBy(e.target.value)}
@@ -165,7 +169,6 @@ const UserOrder = () => {
           </div>
         </div>
 
-        {/* Card view for all devices */}
         {sortedOrders.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedOrders.map((order) => (

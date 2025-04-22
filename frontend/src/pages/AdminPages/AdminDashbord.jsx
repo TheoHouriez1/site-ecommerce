@@ -20,8 +20,6 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -49,7 +47,7 @@ const AdminDashboard = () => {
   const parseArticles = (articleString) => {
     if (!articleString) return [];
     try {
-      const articles = articleString.split(';').map(article => {
+      return articleString.split(';').map(article => {
         const [quantity, name, size] = article.split(',');
         return {
           quantity: quantity?.trim() || '',
@@ -57,12 +55,12 @@ const AdminDashboard = () => {
           size: size?.trim() || ''
         };
       });
-      return articles;
     } catch (error) {
       console.error('Erreur lors du parsing des articles:', error);
       return [];
     }
   };
+
   useEffect(() => {
     if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
       navigate('/');
@@ -70,13 +68,21 @@ const AdminDashboard = () => {
     }
 
     const fetchData = async () => {
+      const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-API-TOKEN': API_TOKEN
+      };
+
       try {
         const [ordersResponse, productsResponse] = await Promise.all([
-          fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/orders'),
-          fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product')
+          fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/orders', { method: 'GET', headers }),
+          fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product', { method: 'GET', headers })
         ]);
 
-        if (!ordersResponse.ok || !productsResponse.ok) 
+        if (!ordersResponse.ok || !productsResponse.ok)
           throw new Error('Erreur lors de la récupération des données');
 
         const [ordersData, productsData] = await Promise.all([
@@ -105,14 +111,11 @@ const AdminDashboard = () => {
   const calculateStats = (orderData) => {
     const total = orderData.reduce((sum, order) => sum + order.price, 0);
     const monthly = {};
-    
+
     orderData.forEach(order => {
       const date = new Date(order.date_commande);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
-      if (!monthly[monthKey]) {
-        monthly[monthKey] = 0;
-      }
+      if (!monthly[monthKey]) monthly[monthKey] = 0;
       monthly[monthKey] += order.price;
     });
 
@@ -181,10 +184,7 @@ const AdminDashboard = () => {
                 layout="horizontal"
                 align="center"
                 verticalAlign="bottom"
-                wrapperStyle={{
-                  paddingTop: '20px',
-                  fontSize: '12px'
-                }}
+                wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
                 formatter={(value, entry) => (
                   <span className="text-sm whitespace-nowrap">
                     {value.length > 15 ? value.substring(0, 15) + '...' : value} ({entry.payload.value})
@@ -213,10 +213,7 @@ const AdminDashboard = () => {
       </div>
       <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
       <p className="text-2xl font-bold text-gray-900 mt-1">
-        {isCurrency ? value.toLocaleString('fr-FR', {
-          style: 'currency',
-          currency: 'EUR'
-        }) : value.toLocaleString('fr-FR')}
+        {isCurrency ? value.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }) : value.toLocaleString('fr-FR')}
       </p>
     </div>
   );
@@ -253,118 +250,35 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            title="Chiffre d'affaires total" 
-            value={stats.totalRevenue}
-            icon={DollarSign}
-            trend
-            percentage={12.5}
-            isCurrency={true}
-          />
-          <StatCard 
-            title="Nombre de commandes" 
-            value={stats.totalOrders}
-            icon={ShoppingBag}
-            trend
-            percentage={8.2}
-            isCurrency={false}
-          />
-          <StatCard 
-            title="Panier moyen" 
-            value={stats.averageOrderValue}
-            icon={TrendingUp}
-            trend
-            percentage={-2.4}
-            isCurrency={true}
-          />
-          <StatCard 
-            title="Produits en stock" 
-            value={products.reduce((sum, product) => sum + (product.stock || 0), 0)}
-            icon={Package}
-            trend
-            percentage={5.3}
-            isCurrency={false}
-          />
+          <StatCard title="Chiffre d'affaires total" value={stats.totalRevenue} icon={DollarSign} trend percentage={12.5} isCurrency />
+          <StatCard title="Nombre de commandes" value={stats.totalOrders} icon={ShoppingBag} trend percentage={8.2} />
+          <StatCard title="Panier moyen" value={stats.averageOrderValue} icon={TrendingUp} trend percentage={-2.4} isCurrency />
+          <StatCard title="Produits en stock" value={products.reduce((sum, p) => sum + (p.stock || 0), 0)} icon={Package} trend percentage={5.3} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">Évolution du chiffre d'affaires</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">\u00c9volution du chiffre d'affaires</h2>
             <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={stats.monthlyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="month" 
-                    tickFormatter={(value) => {
-                      const [year, month] = value.split('-');
-                      return `${month}/${year.slice(2)}`;
-                    }}
-                  />
+                  <XAxis dataKey="month" tickFormatter={(val) => {
+                    const [y, m] = val.split('-');
+                    return `${m}/${y.slice(2)}`;
+                  }} />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value) => [`${value.toFixed(2)} €`, "Revenu"]}
-                    labelFormatter={(value) => {
-                      const [year, month] = value.split('-');
-                      return `${month}/${year}`;
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#4F46E5" 
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 8 }}
-                  />
+                  <Tooltip formatter={(val) => [`${val.toFixed(2)} €`, "Revenu"]} labelFormatter={(val) => {
+                    const [y, m] = val.split('-');
+                    return `${m}/${y}`;
+                  }} />
+                  <Line type="monotone" dataKey="revenue" stroke="#4F46E5" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <StockPieChart />
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-bold text-gray-800 mb-6">Commandes récentes</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Articles</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {orders.slice(0, 5).map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(order.date_commande).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.nom} {order.prenom}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <div className="space-y-1">
-                        {parseArticles(order.article).map((article, idx) => (
-                          <div key={idx} className="flex gap-2">
-                            <span className="font-medium">{article.quantity}x</span>
-                            <span>{article.name}</span>
-                            <span className="text-gray-400">({article.size})</span>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.price.toFixed(2)} €
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </div>

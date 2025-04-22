@@ -16,7 +16,7 @@ class SecurityAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        return $request->getPathInfo() === '/api/login' && $request->isMethod('POST');
+        return $request->getPathInfo() === 'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/login' && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): Passport

@@ -108,6 +108,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   };
+  const API_TOKEN = import.meta.env.VITE_API_TOKEN; 
 
   const logout = async () => {
     try {
@@ -115,7 +116,8 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          "X-API-TOKEN": API_TOKEN
         }
       });
     } catch (error) {

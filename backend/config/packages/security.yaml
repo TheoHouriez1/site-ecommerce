@@ -1,18 +1,30 @@
+# config/packages/security.yaml
 security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: auto
-
     providers:
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
-
+        api_user_provider:
+            memory:
+                users:
+                    api_user: { roles: ['ROLE_API'] }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         
+        # Firewall pour les routes API protégées avec token statique
+        api:
+            pattern: ^/api/
+            stateless: true
+            provider: api_user_provider
+            custom_authenticator:
+                - App\Security\ApiTokenAuthenticator
+        
+        # Firewall pour l'interface web (non-API)
         main:
             lazy: true
             stateless: false
@@ -33,16 +45,11 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
-
-        # 🔒 Sécurisation des routes API avec notre Token Authenticator
-        api:
-            pattern: ^/theo/site-ecommerce/backend/public/index.php/api/
-            stateless: true
-            custom_authenticators:
-                - App\Security\ApiTokenAuthenticator
-
+                
     access_control:
-        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/register, roles: PUBLIC_ACCESS }
-        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/create-order, roles: PUBLIC_ACCESS }
-        - { path: ^/theo/site-ecommerce/backend/public/index.php/api/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/create-order, roles: PUBLIC_ACCESS }
+        - { path: ^/api/ping, roles: PUBLIC_ACCESS }
+        - { path: ^/api/contact, roles: PUBLIC_ACCESS }
+        - { path: ^/api/, roles: ROLE_API }

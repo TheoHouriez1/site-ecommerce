@@ -23,14 +23,21 @@ const AdminProduct = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-    // Vérification du rôle admin
     if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
       navigate('/');
       return;
     }
 
-    // Récupération des produits
-    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/product")
+    const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
+
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-API-TOKEN': API_TOKEN
+      }
+    })
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         return response.json();
@@ -42,10 +49,17 @@ const AdminProduct = () => {
   const handleDeleteProduct = async (productId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       try {
+        const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
+
         const response = await fetch(
           `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/delete-product/${productId}`,
           {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-API-TOKEN': API_TOKEN
+            }
           }
         );
 
@@ -56,7 +70,6 @@ const AdminProduct = () => {
         const data = await response.json();
 
         if (data.success) {
-          // Met à jour la liste des produits en supprimant le produit
           setProducts(products.filter(product => product.id !== productId));
         } else {
           throw new Error(data.error || 'Erreur lors de la suppression');
@@ -65,7 +78,7 @@ const AdminProduct = () => {
         setError(error.message || 'Erreur lors de la suppression du produit');
       }
     }
-};
+  };
 
   const handleEditProduct = (productId) => {
     navigate(`/admin/products/edit/${productId}`);
@@ -100,15 +113,12 @@ const AdminProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
- <AdminNavbar /> <br /><br />      
+      <AdminNavbar /> <br /><br />
       <div className="container mx-auto px-4">
-        {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h1 className="text-3xl font-bold text-gray-800">Gestion des Produits</h1>
-
             <div className="flex flex-wrap items-center gap-4">
-              {/* Search Bar */}
               <div className="relative">
                 <input 
                   type="text"
@@ -119,8 +129,6 @@ const AdminProduct = () => {
                 />
                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
               </div>
-
-              {/* Sort Dropdown */}
               <div className="relative">
                 <select 
                   onChange={(e) => setSortBy(e.target.value)}
@@ -134,7 +142,6 @@ const AdminProduct = () => {
                 </select>
                 <ChevronDown className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" size={20} />
               </div>
-
               <button
                 onClick={() => navigate('/admin/products/new')}
                 className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300"
@@ -146,7 +153,6 @@ const AdminProduct = () => {
           </div>
         </div>
 
-        {/* Products Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -216,16 +222,11 @@ const AdminProduct = () => {
           </div>
         </div>
 
-        {/* Empty State */}
         {filteredProducts.length === 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center mt-8">
             <Search className="mx-auto text-gray-400 mb-4" size={48} />
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              Aucun produit trouvé
-            </h2>
-            <p className="text-gray-600">
-              Essayez de modifier vos critères de recherche
-            </p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Aucun produit trouvé</h2>
+            <p className="text-gray-600">Essayez de modifier vos critères de recherche</p>
           </div>
         )}
       </div>
@@ -233,4 +234,4 @@ const AdminProduct = () => {
   );
 };
 
-export default AdminProduct;   
+export default AdminProduct;
