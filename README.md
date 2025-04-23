@@ -71,7 +71,7 @@ Structure simplifier:
 └── README.md                            (Doc du projet)
 
 ```
-### Prérequis
+### :computer: Prérequis
 
 Assurez-vous d'avoir installé les outils suivants:
 
@@ -93,7 +93,7 @@ Assurez-vous d'avoir installé les outils suivants:
   symfony -v
   ```
 
-### Installation
+### :white_check_mark: Installation
 
 1. Cloner le dépôt
    ```sh
