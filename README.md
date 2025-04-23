@@ -1,90 +1,76 @@
-<a id="readme-top"></a>
-<!-- PROJECT SHIELDS -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Status][status-shield]][status-url]
-[![Done][done-shield]][done-url]
+<div align="center" id="top"> 
+  <img src="./frontend/public/Logo Théo Vintage.png" 
+       alt="Procter & Gamble Logo" 
+       height="300px" />
+       <br>
+  &#xa0;
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/your_username/ecommerce">
-    <img src="./frontend/public/Logo Théo Vintage.png" alt="Logo">
-  </a>
-
-  <h3 align="center">E-commerce | Symfony & React</h3>
-
-  <p align="center">
-    Une application e-commerce moderne avec backend Symfony et frontend React
-    <br />
-    <a href="https://github.com/your_username/ecommerce"><strong>Explorer la documentation »</strong></a>
-    <br />
-    <br />
-    <a href="http://51.159.28.149/theo/site-ecommerce/frontend/dist/">Voir la démo</a>
-  </p>
+  <!-- <a href="https://monprojetpython.netlify.app">Démo</a> -->
 </div>
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table des matières</summary>
-  <ol>
-    <li>
-      <a href="#à-propos-du-projet">À propos du projet</a>
-      <ul>
-        <li><a href="#construit-avec">Construit avec</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#mise-en-route">Mise en route</a>
-      <ul>
-        <li><a href="#prérequis">Prérequis</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#utilisation">Utilisation</a></li>
-    <li><a href="#architecture-api">Architecture API</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contribution">Contribution</a></li>
-    <li><a href="#licence">Licence</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#remerciements">Remerciements</a></li>
-  </ol>
-</details>
+<h1 align="center">Project E-commerce THÉO VINTAGE</h1>
 
-<!-- ABOUT THE PROJECT -->
-## À propos du projet
+<p align="center">
+  <img src="https://img.shields.io/badge/Symfony-000000?style=for-the-badge&logo=symfony&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
+</p>
 
-[![Capture d'écran du produit][product-screenshot]](http://51.159.28.149/theo/site-ecommerce/frontend/dist/)
 
-Ce projet est une solution e-commerce complète qui combine la puissance de Symfony pour le backend et la flexibilité de React pour le frontend. L'architecture est basée sur une séparation claire entre le serveur (backend) et le client (frontend) qui communiquent via des API RESTful.
 
-Pourquoi choisir cette solution:
-* Une architecture moderne et scalable basée sur des API pour une meilleure séparation des préoccupations
-* Un backend robuste avec Symfony qui offre sécurité, performance et extensibilité
-* Une interface utilisateur réactive et dynamique avec React pour une expérience client optimale
-* Une approche modulaire permettant de faire évoluer chaque partie indépendamment
+<!-- Status -->
 
-L'objectif de ce projet est de fournir une base solide pour développer des applications e-commerce professionnelles, avec toutes les fonctionnalités essentielles déjà intégrées.
+<h4 align="center"> 
+  ✅ THÉO VINTAGE :rocket:
+</h4>
 
-<p align="right">(<a href="#readme-top">retour en haut</a>)</p>
+<hr>
 
-### Construit avec
+<p align="center">
+    <a href="#dart-About">About us</a> &#xa0; | &#xa0;
+    <a href="#file_folder-structure">Structure</a> &#xa0; | &#xa0;
+    <a href="#white_check_mark-Prerequisites">Prerequisites</a> &#xa0; | &#xa0;
+    <a href="#computer-Technology">Technology</a> &#xa0; | &#xa0;
+    <a href="#rocket-operation">operation</a> &#xa0; | &#xa0;
+    <a href="#mailbox-contact">Contact</a>
+</p>
 
-Ce projet utilise les frameworks et bibliothèques suivants:
+<br>
 
-* [![Symfony][Symfony.com]][Symfony-url]
-* [![React][React.js]][React-url]
-* [![MySQL][MySQL.com]][MySQL-url]
-* [![Tailwind CSS][Tailwind.com]][Tailwind-url]
-* [![JWT][JWT.io]][JWT-url]
-* [![Webpack][Webpack.js]][Webpack-url]
+## :dart: About ##
 
-<p align="right">(<a href="#readme-top">retour en haut</a>)</p>
+Théo VINTAGE est un site e-commerce dédié à la vente de vêtements de seconde main, proposés dans des états variables, allant du bon état à l’état usé.
+Le site a été conçu en deux parties distinctes :
+*	**Le backend**, développé en PHP avec le framework Symfony, ce qui permet d’accélérer le développement grâce aux nombreux bundles proposés par le framework.
+*	**Le frontend**, réalisé avec la bibliothèque React, offre une interface utilisateur moderne et réactive, enrichie par le système de styles Tailwind CSS pour une mise en page rapide et responsive.
 
-<!-- GETTING STARTED -->
-## Mise en route
 
-Voici comment configurer le projet localement.
+## :file_folder: Structure ##
 
+Structure simplifier:
+
+```
+/site-e-commerce                      
+├── /backend                             
+│   ├── /src                             (Code source Symfony)
+│   │   ├── Controller/                 (Routes + logique)
+│   │   ├── Entity/                     (Modèles de données)
+│   │   ├── Repository/                 (Requêtes BDD)
+│   │   ├── Security/                   (Sécurité / token)
+│   ├── /config                          (Fichiers config)
+│   ├── /public                          (Fichier index.php)
+│   └── .env                             (Variables d’environnement)
+├── /frontend                           
+│   ├── /src                             (Code source React)
+│   │   ├── /components                 (Éléments réutilisables)
+│   │   ├── /pages                      (Pages principales)
+│   │   ├── /context                    (Utilisateur connecté)
+│   │   └── App.jsx                     (Routes React)
+│   └── tailwind.config.js              (Styles Tailwind)
+└── README.md                            (Doc du projet)
+
+```
 ### Prérequis
 
 Assurez-vous d'avoir installé les outils suivants:
@@ -111,8 +97,8 @@ Assurez-vous d'avoir installé les outils suivants:
 
 1. Cloner le dépôt
    ```sh
-   git clone https://github.com/your_username/ecommerce.git
-   cd ecommerce
+   git clone https://github.com/TheoHouriez1/site-ecommerce.git
+   cd site-ecommerce
    ```
 
 #### Backend (Symfony)
@@ -150,14 +136,8 @@ Assurez-vous d'avoir installé les outils suivants:
 
 7. Générer les clés JWT
    ```sh
-   php bin/console lexik:jwt:generate-keypair
-   ```
-
-8. Lancer le serveur de développement
-   ```sh
-   symfony serve
-   # ou
-   php -S localhost:8000 -t public
+   # a ajouter dans le fichier .env
+   API_ACCESS_TOKEN=token123
    ```
 
 #### Frontend (React)
@@ -170,71 +150,31 @@ Assurez-vous d'avoir installé les outils suivants:
 2. Installer les dépendances
    ```sh
    npm install
-   # ou
-   yarn install
    ```
 
 3. Configurer l'URL de l'API dans .env
    ```sh
    # Créer ou modifier le fichier .env
-   REACT_APP_API_URL=http://localhost:8000/api
+   VITE_API_TOKEN=token123
    ```
 
 4. Lancer le serveur de développement
    ```sh
-   npm start
-   # ou
-   yarn start
+   npm run dev
    ```
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
-<!-- USAGE EXAMPLES -->
-## Utilisation
+### Documentation
 
-### Interface administrateur
-
-Accédez au panneau d'administration pour gérer votre catalogue de produits, les commandes et les utilisateurs:
+Une documentation technique et disponible dans le dossier doc :
 ```
-http://localhost:3000/admin
+site-ecommerce/doc/Documentation Technique Théo VINTAGE.pdf
 ```
-Utilisez les identifiants par défaut:
-- Email: admin@example.com
-- Mot de passe: admin123
-
-### API Documentation
-
-Une documentation Swagger est disponible pour explorer l'API:
+et un guide d'utilisation et disponible egalement dans le dossier doc :
 ```
-http://localhost:8000/api/doc
+site-ecommerce/doc/Guide utlisation project e-commerce.pdf
 ```
-
-### Déploiement en production
-
-Pour déployer l'application en production:
-
-1. Configurer les variables d'environnement pour la production
-   ```sh
-   # Backend (.env.local)
-   APP_ENV=prod
-   APP_SECRET=votre_secret_sécurisé
-   DATABASE_URL=mysql://user:password@production-host:3306/ecommerce_prod
-   
-   # Frontend (.env.production)
-   REACT_APP_API_URL=https://api.votredomaine.com
-   ```
-
-2. Construire le frontend pour la production
-   ```sh
-   cd frontend
-   npm run build
-   # ou
-   yarn build
-   ```
-
-3. Déployer les fichiers du dossier `build` sur votre hébergement statique
-
-4. Déployer le backend Symfony sur votre serveur PHP
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
@@ -280,46 +220,19 @@ L'application utilise une architecture RESTful pour la communication entre le fr
 - [x] Processus de commande
 - [x] Intégration Stripe pour les paiements
 - [ ] Gestion multi-langues
-- [ ] Optimisation SEO
 - [ ] PWA (Progressive Web App)
-- [ ] Tests automatisés
-    - [ ] Tests unitaires
-    - [ ] Tests d'intégration
-    - [ ] Tests E2E
 
 Voir les [issues ouvertes](https://github.com/your_username/ecommerce/issues) pour la liste complète des fonctionnalités proposées (et des problèmes connus).
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
-<!-- CONTRIBUTING -->
-## Contribution
-
-Les contributions sont ce qui fait de la communauté open source un endroit incroyable pour apprendre, inspirer et créer. Toutes les contributions que vous apportez sont **grandement appréciées**.
-
-Si vous avez une suggestion pour améliorer ce projet, merci de forker le dépôt et de créer une pull request. Vous pouvez aussi simplement ouvrir une issue avec le tag "enhancement".
-N'oubliez pas de donner une étoile au projet ! Merci encore !
-
-1. Forker le projet
-2. Créer votre branche de fonctionnalité (`git checkout -b feature/AmazingFeature`)
-3. Commiter vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Pousser vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
-<p align="right">(<a href="#readme-top">retour en haut</a>)</p>
-
-<!-- LICENSE -->
-## Licence
-
-Distribué sous la licence MIT. Voir `LICENSE.txt` pour plus d'informations.
-
-<p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
 <!-- CONTACT -->
 ## Contact
 
 Théo Houriez - [@Théo Houriez](https://www.linkedin.com/in/th%C3%A9o-houriez-160756296/) - theohouriez1@gmail.com
 
-Lien du projet: [https://github.com/your_username/ecommerce](https://github.com/your_username/ecommerce)
+Lien du projet: [https://github.com/TheoHouriez1/site-ecommerce](https://github.com/TheoHouriez1/site-ecommerce)
 
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
