@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 const CreateProduct = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -104,7 +105,7 @@ const CreateProduct = () => {
             formDataToSend.append('image3', formData.image3);
         }
 
-        const API_TOKEN = import.meta.env.VITE_API_TOKEN ;
+
 
         const response = await fetch(
             'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-product',

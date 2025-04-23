@@ -68,7 +68,7 @@ const AdminDashboard = () => {
     }
 
     const fetchData = async () => {
-      const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
+      const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
       const headers = {
         'Content-Type': 'application/json',
@@ -258,7 +258,7 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">\u00c9volution du chiffre d'affaires</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-6">evolution du chiffre d'affaires</h2>
             <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={stats.monthlyRevenue}>

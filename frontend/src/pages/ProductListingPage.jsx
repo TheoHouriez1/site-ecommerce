@@ -32,7 +32,7 @@ const ProductListingPage = () => {
   const [categories, setCategories] = useState(['Chaussures', 'Vêtements', 'Accessoires']);
   // États supprimés
 
-  // Récupération des variables d'environnement
+
   const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
   useEffect(() => {

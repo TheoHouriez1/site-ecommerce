@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 const UserOrder = () => {
   const navigate = useNavigate();
@@ -46,14 +46,15 @@ const UserOrder = () => {
 
     setLoading(true);
 
-    const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
-
     const headers = {
       'Authorization': `Bearer ${API_TOKEN}`
     };
 
-    fetch("/api/product", {
-      headers
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-TOKEN": API_TOKEN
+      }
     })
       .then((response) => {
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
@@ -61,8 +62,11 @@ const UserOrder = () => {
       })
       .then((productData) => {
         setProducts(productData);
-        return fetch("/api/orders", {
-          headers
+        return fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/orders", {
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-TOKEN": API_TOKEN
+          }
         });
       })
       .then((response) => {
@@ -86,10 +90,11 @@ const UserOrder = () => {
   const findProductImage = (productName) => {
     const product = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
     if (product && product.image) {
-      return `${BASE_URL}${product.image}`;
+      return `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}`;
     }
     return "https://placehold.co/300x300?text=Image+non+disponible";
   };
+  
 
   const sortedOrders = orders.sort((a, b) => {
     switch(sortBy) {

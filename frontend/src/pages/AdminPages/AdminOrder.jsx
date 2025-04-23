@@ -41,7 +41,7 @@ const AdminOrder = () => {
     }
 
     const fetchOrders = async () => {
-      const API_TOKEN = import.meta.env.VITE_API_TOKEN || "uVx2!h@8Nf4$TqzZ3Kd9#rW1Lg7bY0Vm";
+    const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
       try {
         const response = await fetch(

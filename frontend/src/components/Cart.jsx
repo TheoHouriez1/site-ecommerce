@@ -23,25 +23,33 @@ const stripePromise = loadStripe('pk_test_51QmzOTIE3DEUnxOz4D7vaYyWg2lCUfqlBuhyZ
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 // Composants existants comme ProductItem et OrderSummary sans changement...
-const ProductItem = ({ item }) => (
-  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md">
-    <div className="relative w-16 h-16 overflow-hidden rounded-md">
-      <img
-        src={item.image}
-        alt={item.name}
-        className="w-full h-full object-cover"
-      />
-    </div>
-    <div className="flex-grow">
-      <h3 className="font-medium text-gray-800">{item.name}</h3>
-      <div className="text-sm text-gray-500">
-        <p>Quantité: {item.quantity}</p>
-        {item.size && <p>Taille: {item.size}</p>}
+const ProductItem = ({ item }) => {
+  const BASE_IMAGE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
+  const imageUrl = `${BASE_IMAGE_URL}${item.image}`;
+
+  return (
+    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-md">
+      <div className="relative w-16 h-16 overflow-hidden rounded-md">
+        <img
+          src={imageUrl}
+          alt={item.name}
+          onError={(e) => {
+            e.target.src = "https://placehold.co/400x400?text=Image+non+disponible";
+          }}
+          className="w-full h-full object-cover"
+        />
       </div>
+      <div className="flex-grow">
+        <h3 className="font-medium text-gray-800">{item.name}</h3>
+        <div className="text-sm text-gray-500">
+          <p>Quantité: {item.quantity}</p>
+          {item.size && <p>Taille: {item.size}</p>}
+        </div>
+      </div>
+      <p className="font-bold text-black">{(item.price * item.quantity).toFixed(2)} €</p>
     </div>
-    <p className="font-bold text-black">{(item.price * item.quantity).toFixed(2)} €</p>
-  </div>
-);
+  );
+};
 
 const OrderSummary = ({ cart, total }) => (
   <div className="p-6 bg-white rounded-lg shadow-md">

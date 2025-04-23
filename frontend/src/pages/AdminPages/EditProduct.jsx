@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -123,13 +125,13 @@ const EditProduct = () => {
         if (formData.image2) formDataToSend.append('image2', formData.image2);
         if (formData.image3) formDataToSend.append('image3', formData.image3);
 
-        const token = import.meta.env.VITE_API_TOKEN;
+
         const response = await fetch(
             `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/editProduct/${id}`, 
             {
                 method: 'POST',
                 body: formDataToSend,
-                headers: { 'X-API-TOKEN': token }
+                headers: { 'X-API-TOKEN': API_TOKEN }
             }
         );
 
