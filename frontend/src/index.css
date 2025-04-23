@@ -1,0 +1,18 @@
+@import "keep-react/css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.light-theme {
+  background-color: #ffffff; /* Couleur de fond claire */
+  color: #000000;           /* Couleur du texte */
+}
+
+body.dark-theme {
+  background-color: #0d1015; /* Couleur de fond sombre */
+  color: #ffffff;           /* Couleur du texte */
+}
