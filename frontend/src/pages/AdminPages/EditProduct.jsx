@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
-import { 
-  Save,
-  X,
-  ArrowLeft,
-  Upload
-} from 'lucide-react';
+import { Save, X, ArrowLeft, Upload } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
@@ -27,6 +22,7 @@ const EditProduct = () => {
     name: '',
     description: '',
     price: '',
+    stock: '', // <-- Stock ajouté ici
     sizes: [],
     image: null,
     image2: null,
@@ -43,26 +39,31 @@ const EditProduct = () => {
 
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product/${id}`);
+        const response = await fetch(`http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product/${id}`, {
+          headers: {
+            'X-API-TOKEN': API_TOKEN
+          }
+        });
         if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
         const product = await response.json();
-        
+
         setFormData({
           name: product.name,
           description: product.description,
           price: product.price,
+          stock: product.stock, // <-- Stock ajouté ici
           sizes: product.sizes || [],
           image: null,
           image2: null,
           image3: null
         });
-        
+
         setImagePreview({
           image1: product.image ? `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image}` : null,
           image2: product.image2 ? `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image2}` : null,
           image3: product.image3 ? `http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/${product.image3}` : null
         });
-        
+
         setLoading(false);
       } catch (error) {
         setError("Erreur lors du chargement du produit : " + error.message);
@@ -97,7 +98,7 @@ const EditProduct = () => {
         ...prev,
         [imageNumber]: file
       }));
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(prev => ({
@@ -116,37 +117,40 @@ const EditProduct = () => {
     setSuccess(null);
 
     try {
-        const formDataToSend = new FormData();
-        formDataToSend.append('name', formData.name);
-        formDataToSend.append('description', formData.description);
-        formDataToSend.append('price', formData.price);
-        formDataToSend.append('sizes', JSON.stringify(formData.sizes));
-        if (formData.image) formDataToSend.append('image', formData.image);
-        if (formData.image2) formDataToSend.append('image2', formData.image2);
-        if (formData.image3) formDataToSend.append('image3', formData.image3);
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('stock', formData.stock);
+      formData.sizes.forEach((size, index) => {
+        formDataToSend.append(`sizes[${index}]`, size);
+      });
+      
+      if (formData.image) formDataToSend.append('image', formData.image);
+      if (formData.image2) formDataToSend.append('image2', formData.image2);
+      if (formData.image3) formDataToSend.append('image3', formData.image3);
 
-
-        const response = await fetch(
-            `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/editProduct/${id}`, 
-            {
-                method: 'POST',
-                body: formDataToSend,
-                headers: { 'X-API-TOKEN': API_TOKEN }
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Erreur lors de la mise à jour');
+      const response = await fetch(
+        `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/editProduct/${id}`,
+        {
+          method: 'POST',
+          body: formDataToSend,
+          headers: { 'X-API-TOKEN': API_TOKEN }
         }
+      );
 
-        setSuccess('Produit mis à jour avec succès');
-        
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la mise à jour');
+      }
+
+      setSuccess('Produit mis à jour avec succès');
+
     } catch (error) {
-        setError(error.message);
+      setError(error.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -200,7 +204,8 @@ const EditProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-       <AdminNavbar /> <br /><br />
+      <AdminNavbar />
+      <br /><br />
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
@@ -234,104 +239,36 @@ const EditProduct = () => {
                 Images du produit
               </label>
               <div className="flex flex-wrap gap-4">
-                {/* Image 1 */}
-                <div>
-                  <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
-                    {imagePreview.image1 ? (
-                      <img
-                        src={imagePreview.image1}
-                        alt="Aperçu 1"
-                        className="h-full w-full object-cover"
+                {/* Image Uploads */}
+                {['image1', 'image2', 'image3'].map((imgKey, idx) => (
+                  <div key={imgKey}>
+                    <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
+                      {imagePreview[imgKey] ? (
+                        <img src={imagePreview[imgKey]} alt={`Aperçu ${idx + 1}`} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full bg-gray-100">
+                          <Upload className="text-gray-400" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        id={imgKey}
+                        accept="image/*"
+                        onChange={(e) => handleImageChange(e, imgKey === 'image1' ? 'image' : imgKey)}
+                        className="hidden"
                       />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                        <Upload className="text-gray-400" size={24} />
-                      </div>
-                    )}
+                      <label
+                        htmlFor={imgKey}
+                        className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
+                      >
+                        <Upload size={20} />
+                        {`Image ${idx + 1}`}
+                      </label>
+                    </div>
                   </div>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="image1"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'image')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image1"
-                      className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                    >
-                      <Upload size={20} />
-                      Image 1
-                    </label>
-                  </div>
-                </div>
-
-                {/* Image 2 */}
-                <div>
-                  <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
-                    {imagePreview.image2 ? (
-                      <img
-                        src={imagePreview.image2}
-                        alt="Aperçu 2"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                        <Upload className="text-gray-400" size={24} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="image2"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'image2')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image2"
-                      className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                    >
-                      <Upload size={20} />
-                      Image 2
-                    </label>
-                  </div>
-                </div>
-
-                {/* Image 3 */}
-                <div>
-                  <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
-                    {imagePreview.image3 ? (
-                      <img
-                        src={imagePreview.image3}
-                        alt="Aperçu 3"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                        <Upload className="text-gray-400" size={24} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="image3"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'image3')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image3"
-                      className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                    >
-                      <Upload size={20} />
-                      Image 3
-                    </label>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -383,34 +320,53 @@ const EditProduct = () => {
                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
                 required
               />
-            </div>  
-          {/* Sizes */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Tailles disponibles
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {availableSizes.map((size) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => handleSizeToggle(size)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-300 ${
-                  formData.sizes.includes(size)
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
+            </div>
+
+            {/* Stock */}
+            <div>
+              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+                Stock disponible
+              </label>
+              <input
+                type="number"
+                id="stock"
+                name="stock"
+                value={formData.stock}
+                onChange={handleInputChange}
+                min="0"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
+                required
+              />
+            </div>
+
+            {/* Sizes */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tailles disponibles
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => handleSizeToggle(size)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-300 ${
+                      formData.sizes.includes(size)
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </form>
         </div>
-      </form>
+      </div>
     </div>
-  </div>
-</div>
-);
+  );
 };
 
 export default EditProduct;

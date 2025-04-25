@@ -15,7 +15,6 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        // Vérifie si la route commence par /api/
         return strpos($request->getPathInfo(), '/api/') === 0;
     }
 

@@ -47,6 +47,7 @@ security:
                 enable_csrf: true
                 
     access_control:
+        - { path: ^/api/, roles: PUBLIC_ACCESS, methods: [OPTIONS] }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/create-order, roles: PUBLIC_ACCESS }

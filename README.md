@@ -222,8 +222,6 @@ L'application utilise une architecture RESTful pour la communication entre le fr
 - [ ] Gestion multi-langues
 - [ ] PWA (Progressive Web App)
 
-Voir les [issues ouvertes](https://github.com/your_username/ecommerce/issues) pour la liste complète des fonctionnalités proposées (et des problèmes connus).
-
 <p align="right">(<a href="#readme-top">retour en haut</a>)</p>
 
 

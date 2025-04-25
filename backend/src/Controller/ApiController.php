@@ -79,22 +79,18 @@ class ApiController extends AbstractController
                 return new JsonResponse(['error' => 'Produit non trouvé'], 404);
             }
     
-            // Mise à jour des données de base
-            $product->setName($request->request->get('name'));
-            $product->setDescription($request->request->get('description'));
-            $product->setPrice($request->request->get('price'));
-            
-            // Gestion des tailles
-            $sizes = json_decode($request->request->get('sizes'), true);
-            $product->setSizes($sizes);
-    
-            // Gestion des images
             $uploadDir = $this->getParameter('image_dir');
     
-            // Image principale
+            // Mise à jour des champs
+            $product->setName($request->request->get('name'));
+            $product->setDescription($request->request->get('description'));
+            $product->setPrice((float)$request->request->get('price'));
+            $product->setStock((int)$request->request->get('stock')); // ✅ Stock bien géré
+            $product->setSizes($request->request->all('sizes')); // ✅ pas besoin de json_decode ici !
+    
+            // Gestion des images (avec suppression des anciennes)
             if ($request->files->has('image')) {
                 $image = $request->files->get('image');
-                // Supprimer l'ancienne image si elle existe
                 if ($product->getImage()) {
                     $this->removeOldImage($product->getImage(), $uploadDir);
                 }
@@ -111,7 +107,6 @@ class ApiController extends AbstractController
                 $product->setImage2($newFilename);
             }
     
-            // Image 3
             if ($request->files->has('image3')) {
                 $image3 = $request->files->get('image3');
                 if ($product->getImage3()) {
@@ -123,15 +118,14 @@ class ApiController extends AbstractController
     
             $this->entityManager->flush();
     
-            // Sérialiser le produit correctement
             $jsonContent = $this->serializer->serialize($product, 'json', ['groups' => 'product:read']);
-            
+    
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit mis à jour avec succès',
                 'product' => json_decode($jsonContent, true)
             ]);
-            
+    
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
@@ -139,33 +133,51 @@ class ApiController extends AbstractController
             ], 500);
         }
     }
+    
     #[Route('/api/create-product', name: 'api_create_product', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     public function createProduct(Request $request): JsonResponse
     {
         try {
-            $data = json_decode($request->getContent(), true);
-    
-            // Validation des données
-            if (!$data) {
-                return new JsonResponse(['error' => 'Données invalides'], 400);
+            $name = $request->request->get('name');
+            $description = $request->request->get('description');
+            $price = $request->request->get('price');
+            $sizes = $request->request->all('sizes');
+            $stock = $request->request->get('stock');
+            $image = $request->files->get('image');
+            $image2 = $request->files->get('image2');
+            $image3 = $request->files->get('image3');
+
+            if (!$name || !$description || !$price || !$stock || empty($sizes)) {
+                return new JsonResponse(['error' => 'Tous les champs sont obligatoires'], 400);
             }
-    
-            // Création du produit
+
             $product = new Product();
-            $product->setName($data['name']);
-            $product->setDescription($data['description']);
-            $product->setPrice((float)$data['price']);
-            $product->setSizes($data['sizes']);
-            
-            // Stockage des noms des images
-            if (isset($data['image'])) $product->setImage($data['image']);
-            if (isset($data['image2'])) $product->setImage2($data['image2']);
-            if (isset($data['image3'])) $product->setImage3($data['image3']);
-    
+            $product->setName($name);
+            $product->setDescription($description);
+            $product->setPrice((float) $price);
+            $product->setSizes($sizes);
+            $product->setStock((int) $stock); // <-- cette ligne est essentielle ✅
+
+            if ($image) {
+                $imageName = uniqid() . '.' . $image->guessExtension();
+                $image->move($this->getParameter('image_dir'), $imageName);
+                $product->setImage($imageName);
+            }
+            if ($image2) {
+                $imageName2 = uniqid() . '.' . $image2->guessExtension();
+                $image2->move($this->getParameter('image_dir'), $imageName2);
+                $product->setImage2($imageName2);
+            }
+            if ($image3) {
+                $imageName3 = uniqid() . '.' . $image3->guessExtension();
+                $image3->move($this->getParameter('image_dir'), $imageName3);
+                $product->setImage3($imageName3);
+            }
+
             $this->entityManager->persist($product);
             $this->entityManager->flush();
-    
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit créé avec succès',
@@ -175,19 +187,24 @@ class ApiController extends AbstractController
                     'description' => $product->getDescription(),
                     'price' => $product->getPrice(),
                     'sizes' => $product->getSizes(),
+                    'stock' => $product->getStock(),
                     'image' => $product->getImage(),
                     'image2' => $product->getImage2(),
                     'image3' => $product->getImage3()
                 ]
             ], 201);
-    
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Erreur interne du serveur',
-                'details' => $e->getMessage()
+                'details' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
+    
     #[Route('/api/delete-product/{id}', name: 'api_delete_product', methods: ['DELETE', 'OPTIONS'])]
     public function deleteProduct(int $id): JsonResponse
     {

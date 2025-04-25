@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Save,
-  X,
-  ArrowLeft,
-  Upload,
-} from 'lucide-react';
+import { Save, X, ArrowLeft, Upload } from 'lucide-react';
+import AdminNavbar from '../../components/AdminNavbar';
 import { useAuth } from '../../context/AuthContext';
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+
 const CreateProduct = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -20,25 +17,26 @@ const CreateProduct = () => {
     image2: null,
     image3: null
   });
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
+    stock: '', // <-- Champ stock ajouté ici
     sizes: [],
     image: null,
     image2: null,
     image3: null
   });
 
-  // Vérification des permissions admin
+  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
   useEffect(() => {
-    if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
+    if (!user || !user.roles.includes('ROLE_ADMIN')) {
       navigate('/');
       return;
     }
   }, [user, navigate]);
-
-  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -83,81 +81,58 @@ const CreateProduct = () => {
     setSuccess(null);
 
     try {
-        // Validation des champs
-        if (!formData.name || !formData.description || !formData.price || formData.sizes.length === 0) {
-            throw new Error('Veuillez remplir tous les champs obligatoires et sélectionner au moins une taille');
+      if (!formData.name || !formData.description || !formData.price || !formData.stock || formData.sizes.length === 0) {
+        throw new Error('Veuillez remplir tous les champs obligatoires et sélectionner au moins une taille');
+      }
+
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('stock', formData.stock); // <-- Ajout du stock ici
+      formData.sizes.forEach((size, index) => {
+        formDataToSend.append(`sizes[${index}]`, size);
+      });
+
+      if (formData.image) {
+        formDataToSend.append('image', formData.image);
+      }
+      if (formData.image2) {
+        formDataToSend.append('image2', formData.image2);
+      }
+      if (formData.image3) {
+        formDataToSend.append('image3', formData.image3);
+      }
+
+      const response = await fetch(
+        'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-product',
+        {
+          method: 'POST',
+          body: formDataToSend,
+          headers: {
+            'X-API-TOKEN': API_TOKEN
+          },
         }
+      );
 
-        const formDataToSend = new FormData();
-        formDataToSend.append('name', formData.name);
-        formDataToSend.append('description', formData.description);
-        formDataToSend.append('price', formData.price);
-        formDataToSend.append('sizes', JSON.stringify(formData.sizes));
+      const data = await response.json();
 
-        // Ajouter les images si elles existent
-        if (formData.image) {
-            formDataToSend.append('image', formData.image);
-        }
-        if (formData.image2) {
-            formDataToSend.append('image2', formData.image2);
-        }
-        if (formData.image3) {
-            formDataToSend.append('image3', formData.image3);
-        }
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la création du produit');
+      }
 
-
-
-        const response = await fetch(
-            'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-product',
-            {
-                method: 'POST',
-                body: formDataToSend,
-                headers: {
-                  'X-API-TOKEN': API_TOKEN
-                },
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Erreur lors de la création du produit');
-        }
-
-        setSuccess('Produit créé avec succès');
-        setTimeout(() => {
-            navigate('/admin/products');
-        }, 1500);
+      setSuccess('Produit créé avec succès');
+      setTimeout(() => {
+        navigate('/admin/products');
+      }, 1500);
 
     } catch (error) {
-        console.error('Erreur lors de la création:', error);
-        setError(error.message || 'Une erreur est survenue lors de la création du produit');
+      console.error('Erreur lors de la création:', error);
+      setError(error.message || 'Une erreur est survenue lors de la création du produit');
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
-
-const uploadImage = async (file, path) => {
-    try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch(path, {
-            method: 'POST', // Changé de PUT à POST car c'est plus courant pour l'upload de fichiers
-            body: formData,
-            headers: {
-                // Ne pas définir Content-Type car il sera automatiquement défini avec FormData
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erreur lors de l'upload de l'image: ${response.statusText}`);
-        }
-    } catch (error) {
-        console.error('Erreur upload:', error);
-        throw error;
-    }
-};
+  };
 
   if (error) {
     return (
@@ -192,9 +167,9 @@ const uploadImage = async (file, path) => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-       <AdminNavbar /> <br /><br />
+      <AdminNavbar />
+      <br /><br />
       <div className="container mx-auto px-4">
-        {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -217,113 +192,45 @@ const uploadImage = async (file, path) => {
           </div>
         </div>
 
-        {/* Form */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+
             {/* Images Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Images du produit
               </label>
               <div className="flex flex-wrap gap-4">
-                {/* Image 1 */}
-                <div>
-                  <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
-                    {imagePreview.image1 ? (
-                      <img
-                        src={imagePreview.image1}
-                        alt="Aperçu 1"
-                        className="h-full w-full object-cover"
+                {/* Image Uploads */}
+                {['image1', 'image2', 'image3'].map((imgKey, idx) => (
+                  <div key={imgKey}>
+                    <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
+                      {imagePreview[imgKey] ? (
+                        <img src={imagePreview[imgKey]} alt={`Aperçu ${idx + 1}`} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full bg-gray-100">
+                          <Upload className="text-gray-400" size={24} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        id={imgKey}
+                        accept="image/*"
+                        onChange={(e) => handleImageChange(e, imgKey === 'image1' ? 'image' : imgKey)}
+                        className="hidden"
                       />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                        <Upload className="text-gray-400" size={24} />
-                      </div>
-                    )}
+                      <label
+                        htmlFor={imgKey}
+                        className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
+                      >
+                        <Upload size={20} />
+                        {`Image ${idx + 1}`}
+                      </label>
+                    </div>
                   </div>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="image1"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'image')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image1"
-                      className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                    >
-                      <Upload size={20} />
-                      Image 1
-                    </label>
-                  </div>
-                </div>
-
-                {/* Image 2 */}
-                <div>
-                  <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
-                    {imagePreview.image2 ? (
-                      <img
-                        src={imagePreview.image2}
-                        alt="Aperçu 2"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                        <Upload className="text-gray-400" size={24} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="image2"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'image2')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image2"
-                      className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                    >
-                      <Upload size={20} />
-                      Image 2
-                    </label>
-                  </div>
-                </div>
-
-                {/* Image 3 */}
-                <div>
-                  <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
-                    {imagePreview.image3 ? (
-                      <img
-                        src={imagePreview.image3}
-                        alt="Aperçu 3"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full w-full bg-gray-100">
-                        <Upload className="text-gray-400" size={24} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <input
-                      type="file"
-                      id="image3"
-                      accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'image3')}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="image3"
-                      className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                    >
-                      <Upload size={20} />
-                      Image 3
-                    </label>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -377,6 +284,23 @@ const uploadImage = async (file, path) => {
               />
             </div>
 
+            {/* Stock */}
+            <div>
+              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+                Stock disponible
+              </label>
+              <input
+                type="number"
+                id="stock"
+                name="stock"
+                value={formData.stock}
+                onChange={handleInputChange}
+                min="0"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
+                required
+              />
+            </div>
+
             {/* Sizes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -399,6 +323,7 @@ const uploadImage = async (file, path) => {
                 ))}
               </div>
             </div>
+
           </form>
         </div>
       </div>
