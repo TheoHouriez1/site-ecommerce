@@ -12,6 +12,7 @@ const CreateProduct = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [imagePreview, setImagePreview] = useState({
     image1: null,
     image2: null,
@@ -22,7 +23,8 @@ const CreateProduct = () => {
     name: '',
     description: '',
     price: '',
-    stock: '', // <-- Champ stock ajouté ici
+    stock: '',
+    category: '',
     sizes: [],
     image: null,
     image2: null,
@@ -37,6 +39,25 @@ const CreateProduct = () => {
       return;
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/category', {
+          headers: {
+            'X-API-TOKEN': API_TOKEN
+          }
+        });
+        if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des catégories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -62,7 +83,7 @@ const CreateProduct = () => {
         ...prev,
         [imageNumber]: file
       }));
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(prev => ({
@@ -81,28 +102,23 @@ const CreateProduct = () => {
     setSuccess(null);
 
     try {
-      if (!formData.name || !formData.description || !formData.price || !formData.stock || formData.sizes.length === 0) {
-        throw new Error('Veuillez remplir tous les champs obligatoires et sélectionner au moins une taille');
+      if (!formData.name || !formData.description || !formData.price || !formData.stock || formData.sizes.length === 0 || !formData.category) {
+        throw new Error('Veuillez remplir tous les champs obligatoires, sélectionner une catégorie et au moins une taille');
       }
 
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('price', formData.price);
-      formDataToSend.append('stock', formData.stock); // <-- Ajout du stock ici
+      formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('category', formData.category);
       formData.sizes.forEach((size, index) => {
         formDataToSend.append(`sizes[${index}]`, size);
       });
 
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
-      if (formData.image2) {
-        formDataToSend.append('image2', formData.image2);
-      }
-      if (formData.image3) {
-        formDataToSend.append('image3', formData.image3);
-      }
+      if (formData.image) formDataToSend.append('image', formData.image);
+      if (formData.image2) formDataToSend.append('image2', formData.image2);
+      if (formData.image3) formDataToSend.append('image3', formData.image3);
 
       const response = await fetch(
         'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-product',
@@ -111,7 +127,7 @@ const CreateProduct = () => {
           body: formDataToSend,
           headers: {
             'X-API-TOKEN': API_TOKEN
-          },
+          }
         }
       );
 
@@ -197,11 +213,8 @@ const CreateProduct = () => {
 
             {/* Images Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Images du produit
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Images du produit</label>
               <div className="flex flex-wrap gap-4">
-                {/* Image Uploads */}
                 {['image1', 'image2', 'image3'].map((imgKey, idx) => (
                   <div key={imgKey}>
                     <div className="relative h-32 w-32 bg-gray-100 rounded-xl overflow-hidden">
@@ -221,10 +234,7 @@ const CreateProduct = () => {
                         onChange={(e) => handleImageChange(e, imgKey === 'image1' ? 'image' : imgKey)}
                         className="hidden"
                       />
-                      <label
-                        htmlFor={imgKey}
-                        className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer"
-                      >
+                      <label htmlFor={imgKey} className="flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300 cursor-pointer">
                         <Upload size={20} />
                         {`Image ${idx + 1}`}
                       </label>
@@ -234,90 +244,49 @@ const CreateProduct = () => {
               </div>
             </div>
 
-            {/* Name */}
+            {/* Nom */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Nom du produit
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
-                required
-              />
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Nom du produit</label>
+              <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={4}
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
-                required
-              />
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} rows={4} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
             </div>
 
-            {/* Price */}
+            {/* Prix */}
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                Prix (€)
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                step="0.01"
-                min="0"
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
-                required
-              />
+              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">Prix (€)</label>
+              <input type="number" id="price" name="price" value={formData.price} onChange={handleInputChange} step="0.01" min="0" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
             </div>
 
             {/* Stock */}
             <div>
-              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
-                Stock disponible
-              </label>
-              <input
-                type="number"
-                id="stock"
-                name="stock"
-                value={formData.stock}
-                onChange={handleInputChange}
-                min="0"
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-200"
-                required
-              />
+              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">Stock disponible</label>
+              <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleInputChange} min="0" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
             </div>
 
-            {/* Sizes */}
+            {/* Catégorie */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tailles disponibles
-              </label>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">Catégorie</label>
+              <select id="category" name="category" value={formData.category} onChange={handleInputChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl" required>
+                <option value="">Sélectionner une catégorie</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name_category}>
+                    {cat.name_category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Tailles */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tailles disponibles</label>
               <div className="flex flex-wrap gap-2">
                 {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => handleSizeToggle(size)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-300 ${
-                      formData.sizes.includes(size)
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
+                  <button key={size} type="button" onClick={() => handleSizeToggle(size)} className={`px-4 py-2 rounded-xl text-sm font-medium ${formData.sizes.includes(size) ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                     {size}
                   </button>
                 ))}

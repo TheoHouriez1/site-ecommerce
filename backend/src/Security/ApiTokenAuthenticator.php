@@ -15,7 +15,14 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        return strpos($request->getPathInfo(), '/api/') === 0;
+        // Autoriser Swagger UI et la doc JSON sans authentification
+        $path = $request->getPathInfo();
+        if ($path === '/api/doc' || $path === '/api/doc.json') {
+            return false;
+        }
+
+        // Pour toutes les autres routes /api, authentifier
+        return str_starts_with($path, '/api/');
     }
 
     public function authenticate(Request $request): Passport

@@ -7,9 +7,8 @@ import {
   Plus, 
   Edit2, 
   Trash2, 
-  X,
-  ChevronDown,
-  SlidersHorizontal
+  X, 
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,16 +19,15 @@ const AdminProduct = () => {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('default');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
       navigate('/');
       return;
     }
-
 
     fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
       method: 'GET',
@@ -50,7 +48,6 @@ const AdminProduct = () => {
   const handleDeleteProduct = async (productId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       try {
-
         const response = await fetch(
           `http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/delete-product/${productId}`,
           {
@@ -71,6 +68,7 @@ const AdminProduct = () => {
 
         if (data.success) {
           setProducts(products.filter(product => product.id !== productId));
+          setSuccess('Produit supprimé avec succès !');
         } else {
           throw new Error(data.error || 'Erreur lors de la suppression');
         }
@@ -106,6 +104,24 @@ const AdminProduct = () => {
           <X className="mx-auto text-red-500 mb-4" size={48} />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Erreur de chargement</h2>
           <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <div className="text-green-500 mb-4">✓</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Succès</h2>
+          <p className="text-gray-600">{success}</p>
+          <button
+            onClick={() => setSuccess(null)}
+            className="mt-4 inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-gray-800 transition-colors duration-300"
+          >
+            Retour à la liste
+          </button>
         </div>
       </div>
     );

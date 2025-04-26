@@ -1,5 +1,4 @@
 <?php
-// src/Entity/Category.php
 
 namespace App\Entity;
 
@@ -15,19 +14,18 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['category:read', 'product:read'])]
+    #[Groups(['category:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['category:read', 'product:read'])]
+    #[Groups(['category:read'])]
     private ?string $name_category = null;
 
     /**
      * @var Collection<int, Product>
      */
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
-    #[Groups(['category:read', 'product:read'])]
-    private Collection $products;
+    private Collection $products; // ❌ PAS de Groups ici
 
     public function __construct()
     {
@@ -47,7 +45,6 @@ class Category
     public function setNameCategory(string $name_category): static
     {
         $this->name_category = $name_category;
-
         return $this;
     }
 
@@ -72,7 +69,6 @@ class Category
     public function removeProduct(Product $product): static
     {
         if ($this->products->removeElement($product)) {
-            // set the owning side to null (unless already changed)
             if ($product->getCategory() === $this) {
                 $product->setCategory(null);
             }

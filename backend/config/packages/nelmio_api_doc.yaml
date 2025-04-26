@@ -1,0 +1,33 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: "Mon API Ecommerce"
+            description: "Documentation sécurisée"
+            version: "1.0.0"
+        components:
+            securitySchemes:
+                ApiToken:
+                    type: apiKey
+                    in: header
+                    name: X-API-TOKEN
+        security:
+            - ApiToken: []
+    areas:
+        default:
+            path_patterns:
+                - ^/api
+    html_config:
+        swagger_ui_config:
+            docExpansion: list       # ❗ très important ➔ replie les endpoints mais garde visible
+            displayRequestDuration: true
+            persistAuthorization: true
+            tryItOutEnabled: true
+            requestInterceptor: |
+                (req) => {
+                  const url = new URL(window.location.href);
+                  const token = url.searchParams.get('token');
+                  if (token) {
+                      req.headers['X-API-TOKEN'] = token;
+                  }
+                  return req;
+                }

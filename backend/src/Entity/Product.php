@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -42,11 +40,9 @@ class Product
     #[Groups(['product:read'])]
     private array $sizes = [];
 
-    /**
-     * @var Collection<int, AddProductHistory>
-     */
-    #[ORM\OneToMany(targetEntity: AddProductHistory::class, mappedBy: 'product')]
-    private Collection $addProductHistories;
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['product:read'])]
+    private ?string $category = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['product:read'])]
@@ -58,7 +54,6 @@ class Product
 
     public function __construct()
     {
-        $this->addProductHistories = new ArrayCollection();
         $this->sizes = [];
     }
 
@@ -75,7 +70,6 @@ class Product
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -87,7 +81,6 @@ class Product
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -99,7 +92,6 @@ class Product
     public function setPrice(int $price): static
     {
         $this->price = $price;
-
         return $this;
     }
 
@@ -111,31 +103,6 @@ class Product
     public function setImage(?string $image): static
     {
         $this->image = $image;
-
-        return $this;
-    }
-
-    public function getImage2(): ?string
-    {
-        return $this->image2;
-    }
-
-    public function setImage2(?string $image2): static
-    {
-        $this->image2 = $image2;
-
-        return $this;
-    }
-
-    public function getImage3(): ?string
-    {
-        return $this->image3;
-    }
-
-    public function setImage3(?string $image3): static
-    {
-        $this->image3 = $image3;
-
         return $this;
     }
 
@@ -147,7 +114,6 @@ class Product
     public function setStock(int $stock): static
     {
         $this->stock = $stock;
-
         return $this;
     }
 
@@ -159,7 +125,39 @@ class Product
     public function setSizes(array $sizes): static
     {
         $this->sizes = $sizes;
+        return $this;
+    }
 
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?string $category): static
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    public function getImage2(): ?string
+    {
+        return $this->image2;
+    }
+
+    public function setImage2(?string $image2): static
+    {
+        $this->image2 = $image2;
+        return $this;
+    }
+
+    public function getImage3(): ?string
+    {
+        return $this->image3;
+    }
+
+    public function setImage3(?string $image3): static
+    {
+        $this->image3 = $image3;
         return $this;
     }
 }

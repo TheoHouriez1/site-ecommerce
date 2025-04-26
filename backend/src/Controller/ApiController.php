@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Entity\User;
+use App\Entity\Category;
 use App\Entity\Order;
 use App\Entity\CartItem;
 use Doctrine\ORM\EntityManagerInterface;
@@ -78,17 +79,18 @@ class ApiController extends AbstractController
             if (!$product) {
                 return new JsonResponse(['error' => 'Produit non trouvé'], 404);
             }
-    
+
             $uploadDir = $this->getParameter('image_dir');
-    
+
             // Mise à jour des champs
             $product->setName($request->request->get('name'));
             $product->setDescription($request->request->get('description'));
             $product->setPrice((float)$request->request->get('price'));
-            $product->setStock((int)$request->request->get('stock')); // ✅ Stock bien géré
-            $product->setSizes($request->request->all('sizes')); // ✅ pas besoin de json_decode ici !
-    
-            // Gestion des images (avec suppression des anciennes)
+            $product->setStock((int)$request->request->get('stock'));
+            $product->setSizes($request->request->all('sizes'));
+            $product->setCategory($request->request->get('category')); // 🔥 Ajouté ici
+
+            // Gestion des images
             if ($request->files->has('image')) {
                 $image = $request->files->get('image');
                 if ($product->getImage()) {
@@ -97,7 +99,7 @@ class ApiController extends AbstractController
                 $newFilename = $this->uploadImage($image, $uploadDir);
                 $product->setImage($newFilename);
             }
-    
+
             if ($request->files->has('image2')) {
                 $image2 = $request->files->get('image2');
                 if ($product->getImage2()) {
@@ -106,7 +108,7 @@ class ApiController extends AbstractController
                 $newFilename = $this->uploadImage($image2, $uploadDir);
                 $product->setImage2($newFilename);
             }
-    
+
             if ($request->files->has('image3')) {
                 $image3 = $request->files->get('image3');
                 if ($product->getImage3()) {
@@ -115,17 +117,17 @@ class ApiController extends AbstractController
                 $newFilename = $this->uploadImage($image3, $uploadDir);
                 $product->setImage3($newFilename);
             }
-    
+
             $this->entityManager->flush();
-    
+
             $jsonContent = $this->serializer->serialize($product, 'json', ['groups' => 'product:read']);
-    
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit mis à jour avec succès',
                 'product' => json_decode($jsonContent, true)
             ]);
-    
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
@@ -133,6 +135,7 @@ class ApiController extends AbstractController
             ], 500);
         }
     }
+
     
     #[Route('/api/create-product', name: 'api_create_product', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
@@ -144,21 +147,23 @@ class ApiController extends AbstractController
             $price = $request->request->get('price');
             $sizes = $request->request->all('sizes');
             $stock = $request->request->get('stock');
+            $categoryName = $request->request->get('category');
             $image = $request->files->get('image');
             $image2 = $request->files->get('image2');
             $image3 = $request->files->get('image3');
-
-            if (!$name || !$description || !$price || !$stock || empty($sizes)) {
+    
+            if (!$name || !$description || !$price || !$stock || empty($sizes) || !$categoryName) {
                 return new JsonResponse(['error' => 'Tous les champs sont obligatoires'], 400);
             }
-
+    
             $product = new Product();
             $product->setName($name);
             $product->setDescription($description);
             $product->setPrice((float) $price);
             $product->setSizes($sizes);
-            $product->setStock((int) $stock); // <-- cette ligne est essentielle ✅
-
+            $product->setStock((int) $stock);
+            $product->setCategory($categoryName); // <-- ici juste le nom de la catégorie en string
+    
             if ($image) {
                 $imageName = uniqid() . '.' . $image->guessExtension();
                 $image->move($this->getParameter('image_dir'), $imageName);
@@ -174,10 +179,10 @@ class ApiController extends AbstractController
                 $image3->move($this->getParameter('image_dir'), $imageName3);
                 $product->setImage3($imageName3);
             }
-
+    
             $this->entityManager->persist($product);
             $this->entityManager->flush();
-
+    
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit créé avec succès',
@@ -188,12 +193,13 @@ class ApiController extends AbstractController
                     'price' => $product->getPrice(),
                     'sizes' => $product->getSizes(),
                     'stock' => $product->getStock(),
+                    'category' => $product->getCategory(),
                     'image' => $product->getImage(),
                     'image2' => $product->getImage2(),
                     'image3' => $product->getImage3()
                 ]
             ], 201);
-
+    
         } catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Erreur interne du serveur',
@@ -205,6 +211,8 @@ class ApiController extends AbstractController
         }
     }
     
+    
+
     #[Route('/api/delete-product/{id}', name: 'api_delete_product', methods: ['DELETE', 'OPTIONS'])]
     public function deleteProduct(int $id): JsonResponse
     {
@@ -288,6 +296,21 @@ class ApiController extends AbstractController
             }
         }
     }
+
+    #[Route('/api/category', name: 'api_categories', methods: ['GET'])]
+    public function getCategories(): JsonResponse
+    {
+        $categories = $this->entityManager->getRepository(Category::class)->findAll();
+        $jsonContent = $this->serializer->serialize($categories, 'json', [
+            'groups' => ['category:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            },
+        ]);
+
+        return new JsonResponse($jsonContent, 200, [], true);
+    }   
+
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(
         Request $request, 

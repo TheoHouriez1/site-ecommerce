@@ -47,6 +47,9 @@ security:
                 enable_csrf: true
                 
     access_control:
+        - { path: ^/api/doc.json, roles: PUBLIC_ACCESS }
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+
         - { path: ^/api/, roles: PUBLIC_ACCESS, methods: [OPTIONS] }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
