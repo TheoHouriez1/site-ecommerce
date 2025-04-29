@@ -70,6 +70,48 @@ class ApiController extends AbstractController
         return new JsonResponse($jsonContent, 200, [], true);
     }
 
+    #[Route('/api/product/update-stock', name: 'api_product_update_stock', methods: ['POST'])]
+    public function updateStock(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+    
+        if (!isset($data['id']) || !isset($data['quantity'])) {
+            return new JsonResponse(['error' => 'Paramètres manquants (id ou quantity)'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+    
+        $product = $this->entityManager->getRepository(Product::class)->find($data['id']);
+    
+        if (!$product) {
+            return new JsonResponse(['error' => 'Produit non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+    
+        // Récupérer le stock actuel
+        $currentStock = $product->getStock();
+        $requestedQuantity = (int)$data['quantity'];
+    
+        // Vérifier si le stock est suffisant
+        if ($currentStock < $requestedQuantity) {
+            return new JsonResponse([
+                'error' => 'Stock insuffisant',
+                'available' => $currentStock,
+                'requested' => $requestedQuantity,
+                'productName' => $product->getName()
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+    
+        // Mise à jour du stock
+        $newStock = $currentStock - $requestedQuantity;
+        $product->setStock($newStock);
+        $this->entityManager->flush();
+    
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Stock mis à jour avec succès',
+            'newStock' => $product->getStock(),
+            'productName' => $product->getName()
+        ]);
+    }
+
     #[Route('/api/editProduct/{id}', name: 'api_update_product', methods: ['POST'])]
     public function updateProduct(Request $request, int $id): JsonResponse
     {

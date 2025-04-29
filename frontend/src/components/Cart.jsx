@@ -255,12 +255,13 @@ const InputField = ({ icon: Icon, label, type, value, onChange, placeholder }) =
   );
 };
 
-// PaymentForm modifié pour inclure l'autocomplétion d'adresse et l'ID utilisateur
+// PaymentForm modifié pour inclure la vérification et mise à jour des stocks
 const PaymentForm = ({ total, cart }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
   const { user } = useAuth(); // Pour obtenir l'utilisateur connecté
+  const { clearCart } = useCart(); // Pour vider le panier après paiement
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [email, setEmail] = useState('');
@@ -268,6 +269,145 @@ const PaymentForm = ({ total, cart }) => {
   const [prenom, setPrenom] = useState('');
   const [address, setAddress] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [stockError, setStockError] = useState(null);
+
+  // Fonction pour vérifier les stocks avant paiement
+  const checkStockAvailability = async () => {
+    try {
+      // Si le panier est vide, pas besoin de vérifier
+      if (!cart || cart.length === 0) {
+        return true;
+      }
+      
+      // Récupérer les informations de stock les plus à jour pour chaque produit du panier
+      const stockPromises = cart.map(async (item) => {
+        // Vérifier que les IDs nécessaires sont bien définis
+        if (!item) {
+          throw new Error("Article invalide dans le panier");
+        }
+        
+        // Utiliser product_id, productId ou id selon ce qui est disponible
+        const productId = item.product_id || item.productId || item.id;
+        
+        if (!productId) {
+          throw new Error("ID du produit manquant");
+        }
+        
+        try {
+          // Appel à l'API pour récupérer les informations du produit
+          const baseUrl = 'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product';
+          const apiUrl = `${baseUrl}/${productId}`;
+          
+          const response = await fetch(apiUrl, {
+            headers: { "X-API-TOKEN": API_TOKEN },
+            method: 'GET'
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Erreur lors de la récupération des informations du produit: ${response.status}`);
+          }
+          
+          // Récupérer et traiter la réponse JSON
+          const responseText = await response.text();
+          
+          // Essayer de parser la réponse
+          let productData;
+          try {
+            productData = JSON.parse(responseText);
+          } catch (parseError) {
+            throw new Error("Format de réponse API invalide");
+          }
+          
+          // Si la réponse est une chaîne JSON (double parsing nécessaire)
+          let product = productData;
+          if (typeof productData === 'string') {
+            try {
+              product = JSON.parse(productData);
+            } catch (nestedParseError) {
+              // Continuer avec productData si le parsing échoue
+            }
+          }
+          
+          // Vérifier si le stock est suffisant
+          if (product.stock < item.quantity) {
+            return {
+              id: productId,
+              name: item.name || product.name || `Produit #${productId}`,
+              available: product.stock,
+              requested: item.quantity,
+              sufficient: false
+            };
+          }
+          
+          return {
+            id: productId,
+            name: item.name || product.name || `Produit #${productId}`,
+            available: product.stock,
+            requested: item.quantity,
+            sufficient: true
+          };
+        } catch (itemError) {
+          throw itemError;
+        }
+      });
+      
+      // Attendre que toutes les vérifications soient terminées
+      const stockResults = await Promise.all(stockPromises);
+      
+      const insufficientStocks = stockResults.filter(item => !item.sufficient);
+      
+      if (insufficientStocks.length > 0) {
+        // Construire un message d'erreur détaillé
+        const errorMessage = insufficientStocks.map(item => 
+          `${item.name}: Stock disponible: ${item.available}, Quantité demandée: ${item.requested}`
+        ).join('\n');
+        
+        setStockError(`Stock insuffisant pour certains articles:\n${errorMessage}`);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      setError(`Une erreur est survenue lors de la vérification des stocks: ${error.message}`);
+      return false;
+    }
+  };
+
+  // Fonction pour mettre à jour les stocks après un paiement réussi
+  const updateProductStocks = async () => {
+    try {
+      const updatePromises = cart.map(async item => {
+        // Utiliser product_id, productId ou id selon ce qui est disponible
+        const productId = item.product_id || item.productId || item.id;
+        
+        try {
+          const response = await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product/update-stock', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              "X-API-TOKEN": API_TOKEN
+            },
+            body: JSON.stringify({
+              id: productId,
+              quantity: item.quantity
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Erreur ${response.status} lors de la mise à jour du stock`);
+          }
+          
+          return await response.json();
+        } catch (updateError) {
+          throw updateError;
+        }
+      });
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      // On ne bloque pas le processus ici car la commande est déjà passée
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -280,8 +420,18 @@ const PaymentForm = ({ total, cart }) => {
     }
     
     setProcessing(true);
+    setError(null);
+    setStockError(null);
 
     try {
+      // Vérifier la disponibilité des stocks avant de procéder au paiement
+      const stocksAvailable = await checkStockAvailability();
+      
+      if (!stocksAvailable) {
+        setProcessing(false);
+        return;
+      }
+
       const { error, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
         card: elements.getElement(CardElement),
@@ -297,7 +447,8 @@ const PaymentForm = ({ total, cart }) => {
         setProcessing(false);
         return;
       }
-
+      
+      // Préparation des données de commande
       const orderData = {
         nom: name,
         prenom: prenom,
@@ -305,11 +456,8 @@ const PaymentForm = ({ total, cart }) => {
         address: address,
         article: cart.map(item => `${item.quantity},${item.name},${item.size || 'NS'}`).join(';'),
         price: total,
-        id_user: user.isAuthenticated ? user.id : null // Envoi direct de l'ID utilisateur
+        id_user: user?.id || null
       };
-      
-      console.log("Données envoyées:", orderData); // Log pour debug
-      
         
       const orderResponse = await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/create-order', {
         method: 'POST',
@@ -318,9 +466,27 @@ const PaymentForm = ({ total, cart }) => {
       });
 
       if (!orderResponse.ok) {
-        const errorData = await orderResponse.json().catch(() => null);
-        console.error('Erreur détaillée:', errorData);
-        throw new Error(`Erreur lors de l'enregistrement de la commande: ${errorData ? JSON.stringify(errorData) : orderResponse.status}`);
+        throw new Error(`Erreur lors de l'enregistrement de la commande: ${orderResponse.status}`);
+      }
+
+      // Mettre à jour les stocks après l'enregistrement de la commande
+      await updateProductStocks();
+
+      // Vider le panier après un paiement réussi
+      if (user && user.id) {
+        try {
+          const clearCartResponse = await fetch(`http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/cart/clear/${user.id}`, {
+            method: 'DELETE',
+            headers: { "X-API-TOKEN": API_TOKEN }
+          });
+          
+          if (clearCartResponse.ok) {
+            // Vider le panier local aussi
+            clearCart();
+          }
+        } catch (clearCartError) {
+          // On ne bloque pas le processus si le vidage du panier échoue
+        }
       }
 
       setShowSuccessPopup(true);
@@ -329,8 +495,7 @@ const PaymentForm = ({ total, cart }) => {
         navigate('/');
       }, 3000);
     } catch (err) {
-      console.error('Erreur complète:', err);
-      setError('Une erreur est survenue lors du traitement du paiement.');
+      setError(`Une erreur est survenue lors du traitement du paiement: ${err.message}`);
     }
 
     setProcessing(false);
@@ -342,6 +507,12 @@ const PaymentForm = ({ total, cart }) => {
         <CreditCard className="text-gray-700" size={24} />
         <h2 className="text-xl font-bold text-gray-800">Informations de paiement</h2>
       </div>
+      {stockError && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-md flex items-start gap-2 mb-4">
+          <AlertCircle size={20} className="mt-1 flex-shrink-0" />
+          <div className="whitespace-pre-line">{stockError}</div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-6">
         <InputField
           icon={Mail}
@@ -369,7 +540,6 @@ const PaymentForm = ({ total, cart }) => {
             placeholder="Doe"
           />
         </div>
-        {/* Remplacez l'InputField d'adresse par notre nouveau composant AddressAutocomplete */}
         <AddressAutocomplete
           value={address}
           onChange={(value) => setAddress(value)}
