@@ -18,13 +18,14 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
 import FAQPage from './pages/FAQPage.jsx';
 import GuideTaille from './pages/GuideTaille.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import OrderDetail from './pages/OrderDetail.jsx';
 
 function App() {
   return (
     <HashRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/productcard" element={<ProductCard />} />
+        <Route path="/product/:productId" element={<ProductCard />} />
         <Route path="/cart" element={<StripeCart />} />
         <Route path="/panier" element={<PannierPages />} />
         <Route path="/profile" element={<ProfilePage />} />
@@ -37,6 +38,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/album" element={<Album />} />
         <Route path="/orders" element={<UserOrder />} />
+        <Route path="/order/:orderId" element={<OrderDetail />} />
         <Route path="/politique-confidentialite" element={<PrivacyPolicyPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/guide-tailles" element={<GuideTaille />} />

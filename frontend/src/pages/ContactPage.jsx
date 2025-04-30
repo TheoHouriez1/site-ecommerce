@@ -158,7 +158,7 @@ const ContactPage = () => {
                   <Phone className="text-gray-600" size={24} />
                   <div>
                     <h3 className="font-semibold text-gray-800">Téléphone</h3>
-                    <p className="text-gray-600">+33 6 12 34 56 78</p>
+                    <p className="text-gray-600">+33 07 69 18 50 43</p>
                   </div>
                 </div>
               </div>
@@ -168,7 +168,7 @@ const ContactPage = () => {
                   <MapPin className="text-gray-600" size={24} />
                   <div>
                     <h3 className="font-semibold text-gray-800">Adresse</h3>
-                    <p className="text-gray-600">123 Rue du Commerce<br />75001 Paris, France</p>
+                    <p className="text-gray-600">123 Rue du Commerce <br />75001 Paris, France</p>
                   </div>
                 </div>
               </div>

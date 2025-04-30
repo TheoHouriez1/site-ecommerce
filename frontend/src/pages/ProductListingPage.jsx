@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Heart, 
@@ -7,7 +7,6 @@ import {
   Search,
   ChevronDown,
   X,
-  Filter,
   AlertCircle,
   Sliders
 } from 'lucide-react';
@@ -15,7 +14,6 @@ import { NavbarComponent } from '../components/NavBarComponents';
 
 const ProductListingPage = () => {
   const navigate = useNavigate();
-  // Référence au contexte de panier supprimée
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
@@ -24,14 +22,12 @@ const ProductListingPage = () => {
     category: '',
     minPrice: '',
     maxPrice: '',
-    inStock: false // Nouveau filtre pour les produits en stock
+    inStock: false
   });
   const [sortBy, setSortBy] = useState('default');
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState(new Set());
   const [categories, setCategories] = useState(['Chaussures', 'Vêtements', 'Accessoires']);
-  // États supprimés
-
 
   const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
@@ -50,27 +46,10 @@ const ProductListingPage = () => {
       .catch((error) => setError(error.message));
   }, []);
   
+  // Modification ici pour utiliser l'ID du produit dans l'URL
   const handleProductClick = (product) => {
-    const productData = {
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      image2: product.image2,
-      description: product.description,
-      price: parseFloat(product.price),
-      sizes: product.sizes,
-      category: product.category || "Vêtements",
-      stock: product.stock || 0 // S'assurer que nous avons toujours une valeur de stock
-    };
-    
-    if (product.image3 !== null) {
-      productData.image3 = product.image3;
-    }
-    
-    navigate('/Productcard', { state: productData });
+    navigate(`/product/${product.id}`);
   };
-
-  // Fonction handleAddToCart supprimée
 
   const toggleFavorite = (productId, e) => {
     e.stopPropagation();
@@ -442,8 +421,6 @@ const ProductListingPage = () => {
                       </div>
                     )}
                   </div>
-                  
-                  {/* Bouton d'ajout au panier supprimé */}
                 </div>
               </div>
             );
@@ -471,8 +448,6 @@ const ProductListingPage = () => {
           </div>
         )}
       </div>
-      
-      {/* Notification d'ajout au panier supprimée */}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from './CartContext';
@@ -81,7 +81,7 @@ const OrderSummary = ({ cart, total }) => (
   </div>
 );
 
-// Version simplifiée du composant AddressAutocomplete avec format d'adresse amélioré
+// Version améliorée du composant AddressAutocomplete avec API Base Adresse Nationale
 const AddressAutocomplete = ({ value, onChange }) => {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState([]);
@@ -89,46 +89,120 @@ const AddressAutocomplete = ({ value, onChange }) => {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
   const autocompleteRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
 
-  // Fonction pour gérer les suggestions d'adresses
-  const fetchAddressSuggestions = async (query) => {
-    if (!query || query.length < 3) {
-      setSuggestions([]);
-      return;
-    }
-    try {
-      setIsLoading(true);
-      // Utilisation de l'API Nominatim (OpenStreetMap) avec paramètre pour limiter à la France
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=fr`);
-      const data = await response.json();
-      
-      // Transformer les résultats en format plus simple
-      const formattedSuggestions = data.map(item => {
-        // Créer une adresse simplifiée
-        const street = item.address.road || '';
-        const houseNumber = item.address.house_number || '';
-        const city = item.address.city || item.address.town || item.address.village || '';
-        const postcode = item.address.postcode || '';
-        const country = item.address.country || 'France';
-        
-        // Format: "NuméroRue, CodePostal Ville, France" - comme dans votre exemple
-        const formattedAddress = `${houseNumber ? houseNumber + ' ' : ''}${street}, ${postcode} ${city}, ${country}`.trim().replace(/\s+/g, ' ').replace(/,\s+,/g, ',');
-        
-        return {
-          id: item.place_id,
-          text: formattedAddress,
-          fullAddress: item.display_name // Garder l'adresse complète en cas de besoin
-        };
-      });
-      
-      setSuggestions(formattedSuggestions);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des suggestions d\'adresse:', error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
+  // Fonction debounce pour éviter trop de requêtes pendant la frappe
+  const debounce = (func, delay) => {
+    return (...args) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      debounceTimeoutRef.current = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
   };
+
+  // Fonction pour gérer les suggestions d'adresses avec debounce
+  const fetchAddressSuggestions = useCallback(
+    debounce(async (query) => {
+      if (!query || query.length < 3) {
+        setSuggestions([]);
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        
+        // Utiliser l'API française Base Adresse Nationale
+        const response = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`Erreur API: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transformer les résultats au format attendu
+        const formattedSuggestions = data.features.map(feature => {
+          const properties = feature.properties;
+          
+          // Construire une adresse formatée
+          let formattedAddress = properties.label;
+          
+          // Si le code postal n'est pas inclus dans le label, l'ajouter
+          if (!formattedAddress.includes(properties.postcode)) {
+            formattedAddress = `${formattedAddress}, ${properties.postcode} ${properties.city}, France`;
+          } else if (!formattedAddress.toLowerCase().includes('france')) {
+            // Ajouter France si non présent
+            formattedAddress = `${formattedAddress}, France`;
+          }
+          
+          return {
+            id: feature.properties.id || `addr-${Math.random().toString(36).substr(2, 9)}`,
+            text: formattedAddress,
+            context: properties.context || ''
+          };
+        });
+        
+        setSuggestions(formattedSuggestions);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des suggestions d\'adresse:', error);
+        setSuggestions([]);
+        
+        // En cas d'échec, essayer l'API Nominatim comme fallback
+        try {
+          const fallbackResponse = await fetch(
+            `https://nominatim.openstreetmap.org/search?` +
+            `format=json` +
+            `&q=${encodeURIComponent(query)}` +
+            `&addressdetails=1` +
+            `&limit=5` +
+            `&countrycodes=fr` +
+            `&accept-language=fr`
+          );
+          
+          const fallbackData = await fallbackResponse.json();
+          
+          // Transformer les résultats
+          const fallbackSuggestions = fallbackData.map(item => {
+            const addr = item.address;
+            
+            // Construire une adresse formatée
+            const street = [
+              addr.house_number || '',
+              addr.road || addr.pedestrian || addr.street || addr.footway || addr.path || ''
+            ].filter(Boolean).join(' ');
+            
+            const city = addr.city || addr.town || addr.village || addr.municipality || '';
+            const postcode = addr.postcode || '';
+            
+            // Format: "NuméroRue Rue, CodePostal Ville, France"
+            const formattedAddress = [
+              street,
+              `${postcode} ${city}`,
+              'France'
+            ].filter(part => part.trim() !== '').join(', ');
+            
+            return {
+              id: item.place_id,
+              text: formattedAddress,
+              context: item.display_name
+            };
+          });
+          
+          setSuggestions(fallbackSuggestions);
+        } catch (fallbackError) {
+          console.error('Échec du fallback pour les suggestions d\'adresse:', fallbackError);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300), // 300ms de délai avant déclenchement de la requête
+    []
+  );
 
   // Gestion du changement de valeur dans l'input
   const handleInputChange = (e) => {
@@ -142,6 +216,15 @@ const AddressAutocomplete = ({ value, onChange }) => {
     setInputValue(suggestion.text);
     onChange(suggestion.text);
     setSuggestions([]);
+    setIsFocused(false);
+  };
+
+  // Gérer la pression des touches pour la navigation
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setSuggestions([]);
+      setIsFocused(false);
+    }
   };
 
   // Fermer les suggestions lors d'un clic à l'extérieur
@@ -152,9 +235,14 @@ const AddressAutocomplete = ({ value, onChange }) => {
         setIsFocused(false);
       }
     };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      // Nettoyer le timeout en cas de démontage du composant
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -171,7 +259,8 @@ const AddressAutocomplete = ({ value, onChange }) => {
           value={inputValue}
           onChange={handleInputChange}
           onFocus={() => setIsFocused(true)}
-          placeholder="451 Rue des Trois Pierres, 59200 Tourcoing, France"
+          onKeyDown={handleKeyDown}
+          placeholder="2 Rue de Paris, 75001 Paris, France"
           required
           className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-300"
         />
@@ -208,7 +297,8 @@ const AddressAutocomplete = ({ value, onChange }) => {
           </div>
         )}
       </div>
-      {/* Liste des suggestions */}
+      
+      {/* Liste des suggestions améliorée */}
       {isFocused && suggestions.length > 0 && (
         <div className="absolute z-10 mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
           <ul className="py-1">
@@ -216,7 +306,7 @@ const AddressAutocomplete = ({ value, onChange }) => {
               <li 
                 key={suggestion.id}
                 onClick={() => selectSuggestion(suggestion)}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700 break-words"
+                className="px-4 py-2.5 hover:bg-gray-100 cursor-pointer text-sm text-gray-700 break-words transition-colors duration-150"
               >
                 {suggestion.text}
               </li>

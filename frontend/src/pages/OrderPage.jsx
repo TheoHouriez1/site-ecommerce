@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, 
   X,
   ChevronDown,
   Package,
-  Image as ImageIcon
+  Eye,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -46,10 +46,6 @@ const UserOrder = () => {
 
     setLoading(true);
 
-    const headers = {
-      'Authorization': `Bearer ${API_TOKEN}`
-    };
-
     fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +70,7 @@ const UserOrder = () => {
         return response.json();
       })
       .then((data) => {
-        // Filtrer les commandes par l'ID utilisateur au lieu de l'email
+        // Filtrer les commandes par l'ID utilisateur
         const userOrders = data.filter(order => 
           order.id_user === user.id
         );
@@ -95,6 +91,10 @@ const UserOrder = () => {
     return "https://placehold.co/300x300?text=Image+non+disponible";
   };
   
+  // Fonction pour naviguer vers les détails de la commande
+  const handleViewOrderDetails = (orderId) => {
+    navigate(`/order/${orderId}`);
+  };
 
   const sortedOrders = orders.sort((a, b) => {
     switch(sortBy) {
@@ -177,7 +177,7 @@ const UserOrder = () => {
         {sortedOrders.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedOrders.map((order) => (
-              <div key={order.id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+              <div key={order.id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleViewOrderDetails(order.id)}>
                 <div className="flex justify-between items-center mb-4">
                   <div className="text-sm font-medium text-gray-500">
                     Commande du {new Date(order.date_commande).toLocaleDateString()}
@@ -216,6 +216,20 @@ const UserOrder = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+                
+                {/* Bouton Voir détails */}
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <button 
+                    className="w-full flex items-center justify-center py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Évite le déclenchement du onClick du parent
+                      handleViewOrderDetails(order.id);
+                    }}
+                  >
+                    <span className="mr-1">Voir les détails</span>
+                    <ArrowRight size={16} />
+                  </button>
                 </div>
               </div>
             ))}

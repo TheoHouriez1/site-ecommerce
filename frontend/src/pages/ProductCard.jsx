@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart,
   Heart,
@@ -11,28 +11,22 @@ import {
   Check,
   Plus as PlusIcon,
   Box,
-  Truck
+  Truck,
+  Loader
 } from 'lucide-react';
 import { useCart } from '../components/CartContext';
 
 const BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 const ProductCard = () => {
-  const location = useLocation();
+  const { productId } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const {
-    id,
-    name,
-    image,
-    image2,
-    image3,
-    description,
-    price,
-    sizes,
-    category = "Vêtements",
-    stock = 1
-  } = location.state || {};
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
@@ -45,33 +39,96 @@ const ProductCard = () => {
   const [showReturns, setShowReturns] = useState(false);
   const [showAuthInfo, setShowAuthInfo] = useState(false);
 
-  const isInStock = stock > 0;
-
+  // Fetch product data based on productId
   useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        
+        const response = await fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-TOKEN": API_TOKEN
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+        }
+        
+        const products = await response.json();
+        const foundProduct = products.find(p => p.id === parseInt(productId));
+        
+        if (!foundProduct) {
+          throw new Error("Produit non trouvé");
+        }
+        
+        // Format product data
+        const formattedProduct = {
+          id: foundProduct.id,
+          name: foundProduct.name,
+          image: foundProduct.image,
+          image2: foundProduct.image2,
+          image3: foundProduct.image3,
+          description: foundProduct.description,
+          price: parseFloat(foundProduct.price),
+          sizes: foundProduct.sizes,
+          category: foundProduct.category || "Vêtements",
+          stock: foundProduct.stock || 0
+        };
+        
+        setProduct(formattedProduct);
+        setLoading(false);
+      } catch (error) {
+        console.error("Erreur lors de la récupération du produit:", error);
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+    
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  // Process images when product data is loaded
+  useEffect(() => {
+    if (!product) return;
+    
     window.scrollTo(0, 0);
     const processedUrls = [];
+    
     const processImage = (img) => {
       if (img && typeof img === 'string') {
         const isFullUrl = img.startsWith('http://') || img.startsWith('https://');
         processedUrls.push(isFullUrl ? img : `${BASE_URL}${img}`);
       }
     };
-    processImage(image);
-    processImage(image2);
-    processImage(image3);
+    
+    processImage(product.image);
+    processImage(product.image2);
+    processImage(product.image3);
+    
     if (processedUrls.length === 0) {
       processedUrls.push("https://placehold.co/600x800?text=Image+non+disponible");
     }
+    
     setImageUrls(processedUrls);
-  }, [image, image2, image3]);
+  }, [product]);
 
   const handleQuantityChange = (change) => {
+    if (!product) return;
+    
     const newQuantity = Math.max(1, quantity + change);
-    setQuantity(Math.min(newQuantity, stock));
+    setQuantity(Math.min(newQuantity, product.stock));
   };
 
   const handleAddToCart = () => {
-    if (!selectedSize && sizes?.length > 0) {
+    if (!product) return;
+    
+    const isInStock = product.stock > 0;
+    
+    if (!selectedSize && product.sizes?.length > 0) {
       alert('Veuillez sélectionner une taille');
       return;
     }
@@ -79,7 +136,8 @@ const ProductCard = () => {
       alert('Ce produit est actuellement épuisé.');
       return;
     }
-    addToCart(id, quantity, selectedSize);
+    
+    addToCart(product.id, quantity, selectedSize);
     setShowAddedToCart(true);
     setTimeout(() => setShowAddedToCart(false), 2000);
   };
@@ -103,13 +161,24 @@ const ProductCard = () => {
     delivered: `${formaterDateAvecJoursAjoutes(now, 6)} - ${formaterDateAvecJoursAjoutes(now, 7)}`
   };
 
-  if (!id) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <Loader className="animate-spin h-12 w-12 text-black mx-auto mb-4" />
+          <h2 className="text-xl font-medium text-gray-800">Chargement du produit...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg text-center p-8">
-          <ArrowLeft size={32} className="text-gray-800 mx-auto mb-4" />
-          <h1 className="text-2xl font-medium text-gray-800 mb-4">Aucun produit sélectionné</h1>
-          <p className="text-gray-600 mb-6">Veuillez retourner à la page des produits pour faire votre sélection.</p>
+          <ArrowLeft size={32} className="text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-medium text-gray-800 mb-4">Erreur</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={goBack}
             className="w-full py-3 px-6 bg-black text-white rounded hover:bg-gray-800 transition duration-300"
@@ -121,10 +190,30 @@ const ProductCard = () => {
     );
   }
 
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg text-center p-8">
+          <ArrowLeft size={32} className="text-gray-800 mx-auto mb-4" />
+          <h1 className="text-2xl font-medium text-gray-800 mb-4">Aucun produit trouvé</h1>
+          <p className="text-gray-600 mb-6">Le produit que vous recherchez n'existe pas ou a été retiré.</p>
+          <button
+            onClick={goBack}
+            className="w-full py-3 px-6 bg-black text-white rounded hover:bg-gray-800 transition duration-300"
+          >
+            Retour aux produits
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isInStock = product.stock > 0;
+
   return (
     <div className="min-h-screen bg-gray-50">
     
-      {/* Breadcrumb Navigation */}
+      {/* Breadcrumb Navigation - SIMPLIFIÉ */}
       <div className="bg-white border-b border-gray-200 mb-6">
         <div className="container mx-auto px-4 py-4 text-sm">
           <div className="flex items-center space-x-2 text-gray-500">
@@ -132,11 +221,7 @@ const ProductCard = () => {
               Accueil
             </button>
             <span>/</span>
-            <button onClick={() => navigate('/products')} className="hover:text-black transition-colors">
-              {category}
-            </button>
-            <span>/</span>
-            <span className="text-black font-medium">{name}</span>
+            <span className="text-black font-medium">{product.name}</span>
           </div>
         </div>
       </div>
@@ -168,7 +253,7 @@ const ProductCard = () => {
               <div className="relative aspect-[4/5]">
                 <img
                   src={imageUrls[currentImageIndex]}
-                  alt={name}
+                  alt={product.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.src = "https://placehold.co/600x800?text=Image+non+disponible";
@@ -205,7 +290,7 @@ const ProductCard = () => {
                     >
                       <img
                         src={img}
-                        alt={`Vue ${idx + 1} de ${name}`}
+                        alt={`Vue ${idx + 1} de ${product.name}`}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -216,8 +301,8 @@ const ProductCard = () => {
             
             {/* Product Info Column */}
             <div className="lg:w-5/12 p-6 lg:p-8 lg:border-l border-gray-200">
-              <h1 className="text-2xl font-medium text-gray-800 mb-2">{name}</h1>
-              <p className="text-2xl font-bold text-black mb-4">€{price?.toFixed(2)}</p>
+              <h1 className="text-2xl font-medium text-gray-800 mb-2">{product.name}</h1>
+              <p className="text-2xl font-bold text-black mb-4">€{product.price?.toFixed(2)}</p>
               
               {/* Stock Status */}
               <div className="mb-6">
@@ -242,7 +327,7 @@ const ProductCard = () => {
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                     </svg>
                   ))}
-                  <span className="ml-2 text-sm font-medium text-gray-700">5.0 (64 avis)</span>
+                  <span className="ml-2 text-sm font-medium text-gray-700">5.0 (en developpement)</span>
                 </div>
               </div>
               
@@ -255,11 +340,11 @@ const ProductCard = () => {
               </button>
               
               {/* Sizes */}
-              {sizes && sizes.length > 0 && (
+              {product.sizes && product.sizes.length > 0 && (
                 <div className="mb-6">
                   <p className="text-sm font-medium text-gray-700 mb-2">Taille</p>
                   <div className="grid grid-cols-4 gap-2">
-                    {sizes.map((size) => (
+                    {product.sizes.map((size) => (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
@@ -293,8 +378,8 @@ const ProductCard = () => {
                   </div>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= stock}
-                    className={`p-2 text-gray-500 ${quantity >= stock ? 'opacity-50 cursor-not-allowed' : 'hover:text-black'}`}
+                    disabled={quantity >= product.stock}
+                    className={`p-2 text-gray-500 ${quantity >= product.stock ? 'opacity-50 cursor-not-allowed' : 'hover:text-black'}`}
                   >
                     <Plus size={18} />
                   </button>
@@ -363,7 +448,7 @@ const ProductCard = () => {
                   </button>
                   {showDescription && (
                     <div className="p-4 text-sm text-gray-600 border-t border-gray-200">
-                      <p>{description || 'Aucune description disponible pour ce produit.'}</p>
+                      <p>{product.description || 'Aucune description disponible pour ce produit.'}</p>
                     </div>
                   )}
                 </div>
