@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 const CarouselComponent = ({ onShopNowClick }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   
-  // Collections de grandes marques streetwear/vintage avec vêtements portés
+
   const collections = [
     {
       brand: 'Supreme',

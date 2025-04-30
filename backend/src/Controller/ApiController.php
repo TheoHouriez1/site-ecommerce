@@ -604,7 +604,6 @@ class ApiController extends AbstractController
 // Dans ApiController.php
 
 #[Route('/api/contact', name: 'contact_submit', methods: ['POST', 'OPTIONS'])]
-#[IsGranted('PUBLIC_ACCESS')]  // Ajoutez cette ligne
 public function submit(Request $request, MailerInterface $mailer): JsonResponse
 {
     // Gérer la requête CORS preflight
@@ -668,7 +667,7 @@ public function submit(Request $request, MailerInterface $mailer): JsonResponse
 
         return $response;
     }
- }
+}
     #[Route('/api/cart/{userId}', name: 'api_cart_items', methods: ['GET'])]
     public function getCartItems(int $userId): JsonResponse
     {
