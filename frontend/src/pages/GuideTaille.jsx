@@ -15,9 +15,11 @@ import {
   Search,
   Check
 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GuideTaille = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('hauts');
   const [activeGender, setActiveGender] = useState('hommes');
   const [openAccordion, setOpenAccordion] = useState('comment-mesurer');
@@ -246,7 +248,7 @@ const GuideTaille = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-4 text-sm">
           <div className="flex items-center space-x-2 text-gray-500">
-            <button onClick={() => window.location.href='/'} className="hover:text-black transition-colors">
+            <button onClick={() => navigate('/')} className="hover:text-black transition-colors">
               Accueil
             </button>
             <span>/</span>
@@ -504,7 +506,7 @@ const GuideTaille = () => {
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
-                  onClick={() => window.location.href = '/contact'}
+                  onClick={() => navigate('/contact')}
                   className="w-full px-4 py-2 bg-black text-white rounded-md flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
                 >
                   Contacter le service client

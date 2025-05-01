@@ -601,73 +601,7 @@ class ApiController extends AbstractController
         $jsonContent = $this->serializer->serialize($order, 'json', ['groups' => 'order:read']);
         return new JsonResponse($jsonContent, 200, [], true);
     }
-// Dans ApiController.php
 
-#[Route('/api/contact', name: 'contact_submit', methods: ['POST', 'OPTIONS'])]
-public function submit(Request $request, MailerInterface $mailer): JsonResponse
-{
-    // Gérer la requête CORS preflight
-    if ($request->getMethod() === 'OPTIONS') {
-        $response = new JsonResponse(null, 204);
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
-        return $response;
-    }
-
-    try {
-        $data = json_decode($request->getContent(), true);
-
-        // Validation des données
-        if (!isset($data['name']) || !isset($data['email']) || !isset($data['message'])) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Les champs nom, email et message sont obligatoires'
-            ], 400);
-        }
-
-        // Créer l'email
-        $email = (new Email())
-            ->from('theoshopecommerce@gmail.com')
-            ->to('theohouriez1@gmail.com')
-            ->subject('Nouveau message de contact: ' . ($data['subject'] ?? 'Sans sujet'))
-            ->html($this->renderView('emails/contact.html.twig', [
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'] ?? 'Non renseigné',
-                'subject' => $data['subject'] ?? 'Sans sujet',
-                'message' => $data['message']
-            ]));
-
-        // Envoyer l'email
-        $mailer->send($email);
-
-        $response = new JsonResponse([
-            'success' => true,
-            'message' => 'Message envoyé avec succès'
-        ]);
-
-        // Ajouter les headers CORS
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
-
-        return $response;
-
-    } catch (\Exception $e) {
-        $response = new JsonResponse([
-            'success' => false,
-            'message' => 'Erreur lors de l\'envoi du message'
-        ], 500);
-
-        // Ajouter les headers CORS même en cas d'erreur
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
-
-        return $response;
-    }
-}
     #[Route('/api/cart/{userId}', name: 'api_cart_items', methods: ['GET'])]
     public function getCartItems(int $userId): JsonResponse
     {
