@@ -21,7 +21,6 @@ const RegisterComponent = ({ onClose, onLoginClick }) => {
   const modalRef = useRef();
   const firstNameInputRef = useRef();
 
-  // Focus automatiquement sur le premier champ lors de l'ouverture du modal
   useEffect(() => {
     if (firstNameInputRef.current) {
       setTimeout(() => {
@@ -30,28 +29,6 @@ const RegisterComponent = ({ onClose, onLoginClick }) => {
     }
   }, []);
 
-  // Ferme si on clique en dehors ou presse la touche Escape
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose && onClose();
-      }
-    };
-
-    const handleEsc = (event) => {
-      if (event.key === 'Escape') {
-        onClose && onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEsc);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [onClose]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -108,16 +85,11 @@ const RegisterComponent = ({ onClose, onLoginClick }) => {
         }
       );
 
-      // Récupérer le texte de la réponse pour débogage
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-
-      // Essayez de parser le JSON
       let data;
       try {
+        const responseText = await response.text();
         data = JSON.parse(responseText);
       } catch (parseError) {
-        console.error('Erreur de parsing JSON:', parseError);
         toast.error('Erreur de réponse du serveur');
         setLoading(false);
         return;
@@ -127,12 +99,9 @@ const RegisterComponent = ({ onClose, onLoginClick }) => {
         // Display success toast
         toast.success('Inscription réussie');
         
-        // Si en mode modal et qu'on a onLoginClick, basculer vers le login
         if (onClose && onLoginClick) {
-          // Basculer vers le modal de login avec message de succès
           onLoginClick();
         } else {
-          // Fallback: Redirection vers la page de connexion avec paramètre
           onClose && onClose();
           navigate('/login?registered=true');
         }
@@ -143,7 +112,6 @@ const RegisterComponent = ({ onClose, onLoginClick }) => {
         toast.error(errorMsg);
       }
     } catch (error) {
-      console.error('Erreur:', error);
       const errorMsg = 'Erreur de connexion au serveur';
       setErrorMessage(errorMsg);
       toast.error(errorMsg);
@@ -152,25 +120,20 @@ const RegisterComponent = ({ onClose, onLoginClick }) => {
     }
   };
 
-  // Fonction pour basculer vers le modal de connexion
   const handleLoginClick = (e) => {
     e.preventDefault();
     if (onLoginClick) {
-      // Utiliser la prop onLoginClick pour basculer vers le modal de connexion
       onLoginClick();
     } else {
-      // Fallback : rediriger vers la page de connexion
       onClose && onClose();
       navigate('/login');
     }
   };
 
-  // Fonction pour retourner à la page précédente
   const goBack = () => {
     window.history.back();
   };
 
-  // Vérification de force du mot de passe
   const getPasswordStrength = (password) => {
     if (!password) return { strength: 0, label: '' };
     

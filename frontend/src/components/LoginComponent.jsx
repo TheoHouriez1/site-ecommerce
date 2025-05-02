@@ -20,12 +20,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [isBlocked, setIsBlocked] = useState(false);
-  const [blockTimeLeft, setBlockTimeLeft] = useState(0);
-  const BLOCK_DURATION = 900;
-  const MAX_ATTEMPTS = 5;
-
   const { login } = useAuth();
   const { setUserId, syncCartToServer } = useCart();
   const navigate = useNavigate();
@@ -36,36 +30,7 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
     if (emailInputRef.current) {
       setTimeout(() => emailInputRef.current.focus(), 100);
     }
-    const blockUntil = localStorage.getItem('login_block_until');
-    if (blockUntil) {
-      const now = Date.now();
-      const remaining = Math.floor((blockUntil - now) / 1000);
-      if (remaining > 0) {
-        setIsBlocked(true);
-        setBlockTimeLeft(remaining);
-      } else {
-        localStorage.removeItem('login_block_until');
-      }
-    }
   }, []);
-
-  useEffect(() => {
-    if (isBlocked) {
-      const interval = setInterval(() => {
-        setBlockTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsBlocked(false);
-            setLoginAttempts(0);
-            localStorage.removeItem('login_block_until');
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isBlocked]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -74,30 +39,9 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
     }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
-        onClose && onClose();
-      }
-    };
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose && onClose();
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEsc);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (isBlocked) {
-      setErrorMessage(`Connexion bloquée. Réessayez dans ${blockTimeLeft} secondes.`);
-      return;
-    }
 
     if (!email.trim() || !password.trim()) {
       setErrorMessage('Veuillez remplir tous les champs.');
@@ -155,17 +99,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
           throw new Error('Échec de connexion');
         }
       } else {
-        setLoginAttempts(prev => {
-          const updated = prev + 1;
-          if (updated >= MAX_ATTEMPTS) {
-            const blockUntil = Date.now() + BLOCK_DURATION * 1000;
-            localStorage.setItem('login_block_until', blockUntil.toString());
-            setIsBlocked(true);
-            setBlockTimeLeft(BLOCK_DURATION);
-          }
-          return updated;
-        });
-
         setErrorMessage(data?.error || 'Identifiants incorrects.');
       }
     } catch (error) {
@@ -216,13 +149,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
         </div>
 
         <div className="p-8">
-          {isBlocked && (
-            <div className="mb-6 bg-yellow-100 text-yellow-800 p-4 rounded-lg flex items-center">
-              <AlertCircle size={20} className="mr-2" />
-              Connexion temporairement désactivée. Réessayez dans {blockTimeLeft} secondes.
-            </div>
-          )}
-
           {successMessage && (
             <div className="mb-6 bg-green-50 text-green-700 p-4 rounded-lg flex items-center">
               <Check size={20} className="mr-2" />
@@ -314,7 +240,7 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
 
             <button
               type="submit"
-              disabled={loading || isBlocked}
+              disabled={loading}
               className="w-full py-3 px-4 text-white bg-black hover:bg-gray-800 transition rounded-lg flex items-center justify-center"
             >
               {loading ? (

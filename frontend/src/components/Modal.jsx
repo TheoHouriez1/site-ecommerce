@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom';
 
 export default function MyModal(props) {
   
-  const navigate = useNavigate(); // Hook pour redirection
-
+  const navigate = useNavigate();
   function closeModal() {
-    navigate('/'); // Redirige vers la page d'accueil
+    navigate('/'); 
   }
 
   return (

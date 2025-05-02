@@ -21,7 +21,6 @@ const FooterComponent = () => {
   
   const handleEmailSubscribe = (e) => {
     e.preventDefault();
-    // Logique d'inscription à la newsletter
     alert(`Inscription à la newsletter avec: ${emailInput}`);
     setEmailInput('');
   };
@@ -158,36 +157,6 @@ const FooterComponent = () => {
                   e.target.style.display = 'none';
                 }}
               />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Newsletter */}
-      <div className="bg-gray-50 py-8 border-t border-gray-200">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-lg font-bold text-gray-800">Inscrivez-vous à notre newsletter</h3>
-              <p className="text-gray-600">Recevez nos dernières offres et actualités</p>
-            </div>
-            <div className="w-full md:w-auto">
-              <form className="flex" onSubmit={handleEmailSubscribe}>
-                <input 
-                  type="email" 
-                  placeholder="Votre adresse email" 
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="px-4 py-2 rounded-l-md w-full md:w-64 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
-                  required
-                />
-                <button 
-                  type="submit" 
-                  className="bg-black text-white px-4 py-2 rounded-r-md hover:bg-gray-800 transition-colors duration-300"
-                >
-                  S'inscrire
-                </button>
-              </form>
             </div>
           </div>
         </div>
