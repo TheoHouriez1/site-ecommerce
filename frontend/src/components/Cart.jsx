@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from './CartContext';
-import { useAuth } from '../context/AuthContext'; // Import pour useAuth
+import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -350,8 +350,8 @@ const PaymentForm = ({ total, cart }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
-  const { user } = useAuth(); // Pour obtenir l'utilisateur connecté
-  const { clearCart } = useCart(); // Pour vider le panier après paiement
+  const { user } = useAuth(); 
+  const { clearCart } = useCart(); 
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [email, setEmail] = useState('');
