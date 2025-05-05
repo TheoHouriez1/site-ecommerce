@@ -12,7 +12,6 @@ import CreateProduct from './pages/AdminPages/CreateProduct.jsx';
 import AdminOrder from './pages/AdminPages/AdminOrder.jsx';
 import AdminDashboard from './pages/AdminPages/AdminDashbord.jsx';
 import ContactPage from './pages/ContactPage.jsx'; 
-import Album from './pages/AlbumPage.jsx'; 
 import UserOrder from './pages/OrderPage.jsx';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
 import FAQPage from './pages/FAQPage.jsx';
@@ -37,7 +36,6 @@ function App() {
         <Route path="/admin/orders" element={<AdminOrder />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/album" element={<Album />} />
         <Route path="/orders" element={<UserOrder />} />
         <Route path="/order/:orderId" element={<OrderDetail />} />
         <Route path="/politique-confidentialite" element={<PrivacyPolicyPage />} />

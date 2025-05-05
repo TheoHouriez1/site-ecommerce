@@ -47,10 +47,7 @@ class ApiController extends AbstractController
     {
         $products = $this->entityManager->getRepository(Product::class)->findAll();
         $jsonContent = $this->serializer->serialize($products, 'json', [
-            'groups' => ['product:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();    
-            },
+            'groups' => ['product:read']
         ]);
         
         return new JsonResponse($jsonContent, 200, [], true);
@@ -180,7 +177,6 @@ class ApiController extends AbstractController
 
     
     #[Route('/api/create-product', name: 'api_create_product', methods: ['POST'])]
-    #[IsGranted('PUBLIC_ACCESS')]
     public function createProduct(Request $request): JsonResponse
     {
         try {
@@ -344,10 +340,7 @@ class ApiController extends AbstractController
     {
         $categories = $this->entityManager->getRepository(Category::class)->findAll();
         $jsonContent = $this->serializer->serialize($categories, 'json', [
-            'groups' => ['category:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            },
+            'groups' => ['category:read']
         ]);
 
         return new JsonResponse($jsonContent, 200, [], true);
@@ -362,7 +355,6 @@ class ApiController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
-            // Validation des données
             if (!$data) {
                 return new JsonResponse(['error' => 'Données invalides'], 400);
             }
@@ -372,7 +364,6 @@ class ApiController extends AbstractController
             $firstName = $data['firstName'] ?? null;
             $lastName = $data['lastName'] ?? null;
 
-            // Validations détaillées
             $errors = [];
             if (!$email) $errors[] = 'Email manquant';
             if (!$password) $errors[] = 'Mot de passe manquant';
@@ -383,13 +374,11 @@ class ApiController extends AbstractController
                 return new JsonResponse(['errors' => $errors], 400);
             }
 
-            // Vérification si l'utilisateur existe déjà
             $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $email]);
             if ($existingUser) {
                 return new JsonResponse(['error' => 'Cet email est déjà utilisé'], 400);
             }
 
-            // Création du nouvel utilisateur
             $user = new User();
             $user->setEmail($email);
             $user->setFirstName($firstName);
@@ -400,7 +389,6 @@ class ApiController extends AbstractController
             $em->persist($user);
             $em->flush();
 
-            // Retourner les données utilisateur en JSON
             return new JsonResponse([
                 'message' => 'Inscription réussie',
                 'user' => [
@@ -413,10 +401,8 @@ class ApiController extends AbstractController
             ], 201);
 
         } catch (\Exception $e) {
-            // Log de l'erreur
             $this->container->get('logger')->error('Erreur d\'inscription : ' . $e->getMessage());
 
-            // Retourne une réponse générique
             return new JsonResponse([
                 'error' => 'Erreur interne du serveur',
                 'details' => $e->getMessage()
@@ -425,11 +411,9 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    #[IsGranted('PUBLIC_ACCESS')]
     public function login(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
         try {
-            // Récupérer et décoder les données JSON
             $data = json_decode($request->getContent(), true);
             
             if (!$data || !isset($data['email']) || !isset($data['password'])) {
@@ -448,10 +432,8 @@ class ApiController extends AbstractController
                 return new JsonResponse(['error' => 'Identifiants incorrects'], 401);
             }
             
-            // Configurer la session
             $request->getSession()->set('user_id', $user->getId());
             
-            // Retourner les informations de l'utilisateur
             return new JsonResponse([
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
@@ -460,7 +442,6 @@ class ApiController extends AbstractController
                 'roles' => $user->getRoles()
             ]);
         } catch (\Exception $e) {
-            // Log l'erreur pour débogage
             error_log('Erreur de login: ' . $e->getMessage());
             
             return new JsonResponse([

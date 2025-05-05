@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Heart, 
-  Grid, 
-  List, 
   Search,
   ChevronDown,
   X,
@@ -15,8 +12,8 @@ import { NavbarComponent } from '../components/NavBarComponents';
 const ProductListingPage = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
@@ -26,12 +23,28 @@ const ProductListingPage = () => {
   });
   const [sortBy, setSortBy] = useState('default');
   const [search, setSearch] = useState('');
-  const [favorites, setFavorites] = useState(new Set());
-  const [categories, setCategories] = useState(['Chaussures', 'Vêtements', 'Accessoires']);
+  const [isMobile, setIsMobile] = useState(false);
 
   const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
+  // Détection de la taille d'écran
   useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768); // Définir comme mobile si largeur < 768px
+    };
+
+    // Vérifier la taille initiale
+    checkScreenSize();
+
+    // Ajouter un écouteur d'événement pour vérifier quand la fenêtre est redimensionnée
+    window.addEventListener('resize', checkScreenSize);
+
+    // Nettoyer l'écouteur d'événement
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  useEffect(() => {
+    // Fetch products
     fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
       headers: {
         "Content-Type": "application/json",
@@ -44,24 +57,24 @@ const ProductListingPage = () => {
       })
       .then(setProducts)
       .catch((error) => setError(error.message));
+    
+    // Fetch categories
+    fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/category", {
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-TOKEN": API_TOKEN
+      }
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+        return response.json();
+      })
+      .then(setCategories)
+      .catch((error) => setError(error.message));
   }, []);
   
-  // Modification ici pour utiliser l'ID du produit dans l'URL
   const handleProductClick = (product) => {
     navigate(`/product/${product.id}`);
-  };
-
-  const toggleFavorite = (productId, e) => {
-    e.stopPropagation();
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(productId)) {
-        newFavorites.delete(productId);
-      } else {
-        newFavorites.add(productId);
-      }
-      return newFavorites;
-    });
   };
 
   const handleFilterChange = (name, value) => {
@@ -99,16 +112,6 @@ const ProductListingPage = () => {
         default: return 0;
       }
     });
-
-  // Déterminer si un produit est nouveau (pour le badge "Nouvelle arrivée")
-  const isNewProduct = (product) => {
-    if (!product.createdAt) return false;
-    const creationDate = new Date(product.createdAt);
-    const currentDate = new Date();
-    const diffTime = Math.abs(currentDate - creationDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 14; // Considérer comme nouveau si ajouté au cours des 14 derniers jours
-  };
 
   if (error) {
     return (
@@ -172,34 +175,8 @@ const ProductListingPage = () => {
                 </div>
               </div>
               
-              {/* View Mode, Sort, Filter */}
+              {/* Sort, Filter */}
               <div className="flex flex-wrap items-center gap-4">
-                {/* View Mode Toggle */}
-                <div className="flex rounded-md overflow-hidden border border-gray-200">
-                  <button 
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 transition-all ${
-                      viewMode === 'grid' 
-                        ? 'text-white bg-black' 
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                    aria-label="Vue en grille"
-                  >
-                    <Grid size={20} />
-                  </button>
-                  <button 
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 transition-all ${
-                      viewMode === 'list' 
-                        ? 'text-white bg-black' 
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                    aria-label="Vue en liste"
-                  >
-                    <List size={20} />
-                  </button>
-                </div>
-                
                 {/* Sort Dropdown */}
                 <div className="relative">
                   <select 
@@ -239,21 +216,21 @@ const ProductListingPage = () => {
             {isFilterOpen && (
               <div className="py-6 border-t border-gray-200 mt-4">
                 <div className="flex flex-wrap gap-8 items-start">
-                  {/* Category Filter */}
+                  {/* Category Filter - Maintenant dynamique depuis l'API */}
                   <div className="w-full md:w-auto">
                     <h3 className="font-medium text-gray-700 mb-3 text-sm">Catégorie</h3>
                     <div className="flex flex-wrap gap-2">
-                      {categories.map(cat => (
+                      {categories.map(category => (
                         <button
-                          key={cat}
-                          onClick={() => handleFilterChange('category', filters.category === cat ? '' : cat)}
+                          key={category.id}
+                          onClick={() => handleFilterChange('category', filters.category === category.name_category ? '' : category.name_category)}
                           className={`px-4 py-2 text-sm rounded-md transition-all ${
-                            filters.category === cat 
+                            filters.category === category.name_category 
                               ? 'bg-black text-white' 
                               : 'border border-gray-200 text-gray-700 hover:border-black hover:text-black'
                           }`}
                         >
-                          {cat}
+                          {category.name_category}
                         </button>
                       ))}
                     </div>
@@ -321,36 +298,26 @@ const ProductListingPage = () => {
           </p>
         </div>
         
-        {/* Products Grid */}
+        {/* Products Grid/List adaptatif selon la taille d'écran */}
         <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-            : 'grid-cols-1'
+          isMobile 
+            ? 'grid-cols-1' // Vue en liste pour mobile
+            : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // Vue en grid pour tablettes et desktop
         }`}>
           {processedProducts.map(product => {
-            // Déterminer si le produit est en stock
             const isInStock = product.stock > 0;
             
             return (
               <div 
                 key={product.id}
                 className={`group cursor-pointer bg-white rounded-lg shadow-md overflow-hidden ${
-                  viewMode === 'list' ? 'flex' : ''
+                  isMobile ? 'flex' : ''
                 }`}
               >
                 <div 
-                  className={`relative ${viewMode === 'list' ? 'w-1/3' : 'w-full'}`}
+                  className={`relative ${isMobile ? 'w-1/3' : 'w-full'}`}
                   onClick={() => handleProductClick(product)}
-                >
-                  {/* Badge "Nouvelle arrivée" - Seulement si le produit est nouveau */}
-                  {isNewProduct(product) && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <div className="bg-black text-white text-xs px-2 py-1 rounded">
-                        Nouvelle arrivée
-                      </div>
-                    </div>
-                  )}
-                  
+                > 
                   {/* Image container with square aspect ratio */}
                   <div className="bg-gray-50 overflow-hidden aspect-[4/5]">
                     <img 
@@ -371,21 +338,8 @@ const ProductListingPage = () => {
                       </div>
                     )}
                   </div>
-                  
-                  {/* Favorite button */}
-                  <button 
-                    onClick={(e) => toggleFavorite(product.id, e)}
-                    className="absolute top-3 right-3 z-10 p-2 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label={favorites.has(product.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
-                  >
-                    <Heart 
-                      className={favorites.has(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}
-                      size={18}
-                    />
-                  </button>
                 </div>
-                
-                <div className={`p-4 ${viewMode === 'list' ? 'w-2/3' : ''}`}>
+                <div className={`p-4 ${isMobile ? 'w-2/3' : ''}`}>
                   <div onClick={() => handleProductClick(product)} className="space-y-1.5">
                     <h2 className="text-base font-medium text-gray-800">{product.name}</h2>
                     

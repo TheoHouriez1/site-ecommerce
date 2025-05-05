@@ -11,12 +11,10 @@ import {
   LogOut,
   ChevronDown,
   Settings,
-  Boxes,
-  Search
+  Boxes
 } from 'lucide-react';
 import { useCart } from './CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import SeachComponent from './SeachComponent.tsx';
 import LoginComponent from './LoginComponent.jsx'; 
 import RegisterComponent from './RegisterComponent.jsx';
 
@@ -30,36 +28,25 @@ export const NavbarComponent = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
-  
-  // Detect scroll to change navbar style
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
-    
-    // Initial check in case page is loaded scrolled down
     handleScroll();
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Vérifier si on vient d'une inscription réussie
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('registered') === 'true') {
       setShowLoginModal(true);
     }
   }, [location]);
-  
+
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-  
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -69,40 +56,29 @@ export const NavbarComponent = () => {
       console.error('Erreur lors de la déconnexion:', error);
     }
   };
-  
-  // Fonctions pour gérer les modals
+
   const openLoginModal = () => {
     setShowLoginModal(true);
     setShowRegisterModal(false);
     setIsDropdownOpen(false);
   };
 
-  const closeLoginModal = () => {
-    setShowLoginModal(false);
-  };
-
+  const closeLoginModal = () => setShowLoginModal(false);
   const openRegisterModal = () => {
     setShowRegisterModal(true);
     setShowLoginModal(false);
     setIsDropdownOpen(false);
   };
-
-  const closeRegisterModal = () => {
-    setShowRegisterModal(false);
-  };
-
-  // Fonction pour passer du login au register et vice versa
+  const closeRegisterModal = () => setShowRegisterModal(false);
   const switchToRegister = () => {
     setShowLoginModal(false);
     setShowRegisterModal(true);
   };
-
   const switchToLogin = () => {
     setShowRegisterModal(false);
     setShowLoginModal(true);
   };
-  
-  // Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isDropdownOpen && !event.target.closest('.user-dropdown-container')) {
@@ -110,11 +86,9 @@ export const NavbarComponent = () => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
-  
+
   const CartBadge = () => (
     <button 
       onClick={() => navigate('/panier')}
@@ -128,7 +102,7 @@ export const NavbarComponent = () => {
       )}
     </button>
   );
-  
+
   const UserDropdown = () => (
     <div className="relative user-dropdown-container">
       <button
@@ -188,7 +162,6 @@ export const NavbarComponent = () => {
                   <Package size={18} className={isScrolled ? "text-gray-500" : "text-gray-400"} />
                   <span>Mes commandes</span>
                 </button>
-                {/* Menu Admin - visible uniquement pour les administrateurs */}
                 {user && user.roles && user.roles.includes('ROLE_ADMIN') && (
                   <button 
                     onClick={() => {
@@ -250,19 +223,14 @@ export const NavbarComponent = () => {
       )}
     </div>
   );
-  
+
   return (
     <>
-      <nav 
-        className={`fixed w-full top-0 z-40 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-white shadow-sm' 
-            : 'bg-transparent'
-        }`}
-      >
+      <nav className={`fixed w-full top-0 z-40 transition-all duration-300 ${
+        isScrolled ? 'bg-white shadow-sm' : 'bg-transparent'
+      }`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-24">
-            {/* Logo et Navigation principale */}
             <div className="flex items-center space-x-8">
               <div 
                 onClick={() => navigate('/')}
@@ -272,8 +240,6 @@ export const NavbarComponent = () => {
               >
                 THEO VINTAGE
               </div>
-              
-              {/* Navigation desktop */}
               <div className="hidden md:flex items-center space-x-8">
                 <button 
                   onClick={() => navigate('/contact')}
@@ -287,23 +253,10 @@ export const NavbarComponent = () => {
                 </button>
               </div>
             </div>
-            
-            {/* Actions desktop */}
             <div className="hidden md:flex items-center space-x-6">
-              <div className="relative">
-                <button 
-                  className={`p-2 hover:opacity-70 transition-opacity duration-300 ${
-                    isScrolled ? 'text-gray-800' : 'text-white'
-                  }`}
-                  onClick={() => navigate('/search')}
-                >
-                  <Search size={24} />
-                </button>
-              </div>
               <CartBadge />
               <UserDropdown />
             </div>
-            {/* Menu mobile */}
             <div className="md:hidden flex items-center">
               <CartBadge />
               <UserDropdown />
@@ -319,28 +272,12 @@ export const NavbarComponent = () => {
               </button>
             </div>
           </div>
-          {/* Menu mobile déroulant */}
           <div 
             className={`md:hidden transition-all duration-300 ease-in-out ${
-              isMenuOpen 
-                ? 'max-h-96 opacity-100' 
-                : 'max-h-0 opacity-0'
+              isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             } overflow-hidden ${isScrolled ? 'bg-white' : 'bg-black bg-opacity-80'}`}
           >
             <div className="py-6 space-y-5">
-              <div className="px-2 mb-4">
-                <div className="relative">
-                  <button 
-                    className={`w-full px-4 py-3 flex items-center justify-center text-base ${
-                      isScrolled ? 'text-gray-800 hover:bg-gray-50' : 'text-white hover:bg-gray-800'
-                    } transition-colors duration-300`}
-                    onClick={() => navigate('/search')}
-                  >
-                    <Search size={18} className="mr-2" />
-                    <span>Rechercher</span>
-                  </button>
-                </div>
-              </div>
               <button 
                 onClick={() => {
                   navigate('/products');
@@ -367,7 +304,6 @@ export const NavbarComponent = () => {
               >
                 Contact
               </button>
-              {/* Boutons de connexion et d'inscription dans le menu mobile */}
               {!user?.isAuthenticated && (
                 <>
                   <button 
@@ -409,7 +345,6 @@ export const NavbarComponent = () => {
         </div>
       </nav>
 
-      {/* Modals de connexion et d'inscription */}
       {showLoginModal && (
         <LoginComponent 
           onClose={closeLoginModal} 

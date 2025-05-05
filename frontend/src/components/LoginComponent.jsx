@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useCart } from './CartContext.jsx';
 import {
   Mail, Lock, EyeOff, Eye, AlertCircle,
   Check, X, Loader2, ArrowLeft
@@ -21,7 +20,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
   const [passwordFocused, setPasswordFocused] = useState(false);
 
   const { login } = useAuth();
-  const { setUserId, syncCartToServer } = useCart();
   const navigate = useNavigate();
   const modalRef = useRef();
   const emailInputRef = useRef();
@@ -38,7 +36,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
       setSuccessMessage('Inscription réussie ! Vous pouvez maintenant vous connecter.');
     }
   }, []);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,14 +79,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
         const loginSuccess = await login(userData, rememberMe);
 
         if (loginSuccess) {
-          try {
-            setUserId(data.id);
-            await syncCartToServer();
-            console.log('Panier synchronisé avec succès!');
-          } catch (error) {
-            console.error('Erreur lors de la synchronisation du panier:', error);
-          }
-
           setSuccessMessage('Connexion réussie !');
           setTimeout(() => {
             onClose && onClose();
@@ -192,13 +181,6 @@ const LoginComponent = ({ onClose, onRegisterClick }) => {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Mot de passe
                 </label>
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-sm text-black hover:underline font-medium"
-                >
-                  Mot de passe oublié ?
-                </button>
               </div>
               <div className={`relative rounded-lg overflow-hidden ${passwordFocused ? 'ring-2 ring-black ring-opacity-50' : ''}`}>
                 <input

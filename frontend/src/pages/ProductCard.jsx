@@ -30,7 +30,6 @@ const ProductCard = () => {
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
-  const [isLiked, setIsLiked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAddedToCart, setShowAddedToCart] = useState(false);
   const [imageUrls, setImageUrls] = useState([]);
@@ -91,7 +90,6 @@ const ProductCard = () => {
     }
   }, [productId]);
 
-  // Process images when product data is loaded
   useEffect(() => {
     if (!product) return;
     
@@ -100,10 +98,9 @@ const ProductCard = () => {
     
     const processImage = (img) => {
       if (img && typeof img === 'string') {
-        const isFullUrl = img.startsWith('http://') || img.startsWith('https://');
-        processedUrls.push(isFullUrl ? img : `${BASE_URL}${img}`);
+        processedUrls.push(img);
       }
-    };
+    };    
     
     processImage(product.image);
     processImage(product.image2);
@@ -237,18 +234,7 @@ const ProductCard = () => {
                   Nouvelle arrivée
                 </div>
               </div>
-              
-              {/* Wishlist button */}
-              <button 
-                onClick={handleWishlist}
-                className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition"
-              >
-                <Heart 
-                  size={20} 
-                  className={isLiked ? "fill-red-500 text-red-500" : "text-gray-600"}
-                />
-              </button>
-              
+        
               {/* Main Image */}
               <div className="relative aspect-[4/5]">
                 <img
@@ -318,7 +304,6 @@ const ProductCard = () => {
                   </div>
                 )}
               </div>
-              
               {/* Reviews */}
               <div className="mb-6 bg-gray-50 p-3 rounded">
                 <div className="flex items-center space-x-1">
@@ -327,7 +312,7 @@ const ProductCard = () => {
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                     </svg>
                   ))}
-                  <span className="ml-2 text-sm font-medium text-gray-700">5.0 (en developpement)</span>
+                  <span className="ml-2 text-sm font-medium text-gray-700">5.0 (prochainement)</span>
                 </div>
               </div>
               

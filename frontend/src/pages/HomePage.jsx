@@ -8,9 +8,7 @@ import CarouselComponent from '../components/CarouselComponent';
 
 const Home = () => {
 
-  
-  // Handler pour le bouton Shop Now
-  const handleShopNowClick = () => {
+    const handleShopNowClick = () => {
     window.scrollTo({
       top: document.querySelector('.products-section').offsetTop,
       behavior: 'smooth'
