@@ -1,0 +1,17 @@
+# config/routes.yaml
+
+# Charger les routes de tes Controllers API
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+# Créer manuellement la route pour Swagger UI
+api_doc:
+    path: /api/doc
+    controller: nelmio_api_doc.controller.swagger_ui
+    defaults:
+        swagger_data:
+            configUrl: '/api/doc.json'
+            oauth2RedirectUrl: '/api/doc/oauth2-redirect.html'

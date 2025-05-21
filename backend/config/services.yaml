@@ -1,0 +1,23 @@
+# config/services.yaml
+
+parameters:
+    image_dir: '%kernel.project_dir%/public/uploads/images'
+
+services:
+    Symfony\Component\Security\Core\Password\PasswordHasherInterface: '@security.password_hasher'
+
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # 🔥 Ajouter ici le listener pour sécuriser la doc
+    App\EventListener\ApiDocAccessListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 10 }

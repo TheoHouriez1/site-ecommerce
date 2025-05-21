@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Théo Houriez</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --primary: #111827;
+            --secondary: #3B82F6;
+            --accent: #10B981;
+            --white: #FFFFFF;
+            --light-gray: #F3F4F6;
+            --medium-gray: #D1D5DB;
+            --dark-gray: #4B5563;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: var(--light-gray);
+            color: var(--primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%233B82F6' fill-opacity='0.05' d='M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,229.3C672,235,768,213,864,186.7C960,160,1056,128,1152,138.7C1248,149,1344,203,1392,229.3L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: bottom;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::before {
+            content: "📚";
+            position: absolute;
+            left: -45px;
+            top: 5px;
+            font-size: 1.8rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        h1::after {
+            content: "📝";
+            position: absolute;
+            right: -45px;
+            top: 5px;
+            font-size: 1.8rem;
+            animation: float 3s ease-in-out infinite 1.5s;
+        }
+
+        .typewriter-container {
+            display: flex;
+            justify-content: center;
+            height: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .typewriter {
+            color: var(--secondary);
+            font-weight: 500;
+            font-size: 1.2rem;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            padding: 0 1rem;
+        }
+
+        .doc-card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: left;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(59, 130, 246, 0.9), rgba(16, 185, 129, 0.9));
+            z-index: -1;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .doc-card:hover::after {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .doc-card:hover .doc-icon,
+        .doc-card:hover .doc-title,
+        .doc-card:hover .doc-description,
+        .doc-card:hover .doc-meta {
+            color: var(--white);
+        }
+
+        .doc-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            transition: color 0.3s ease;
+        }
+
+        .doc-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            transition: color 0.3s ease;
+        }
+
+        .doc-description {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .doc-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            transition: color 0.3s ease;
+        }
+
+        .doc-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            background-color: var(--secondary);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 3rem;
+            animation: pulse 2s infinite;
+        }
+
+        .action-button:hover {
+            background-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        .search-container {
+            margin: 2rem 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border-radius: 50px;
+            border: 2px solid var(--medium-gray);
+            background-color: var(--white);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            font-size: 1.2rem;
+        }
+
+        footer {
+            width: 100%;
+            padding: 1.2rem;
+            text-align: center;
+            background-color: var(--white);
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.03);
+            margin-top: auto;
+            position: relative;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: var(--white);
+        }
+
+        .linkedin-link {
+            color: #0077B5;
+        }
+
+        .github-link {
+            color: #171515;
+        }
+
+        .social-link::before {
+            content: "👋";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 1.2rem;
+            opacity: 0;
+            transform: scale(0) rotate(-45deg);
+            transition: all 0.3s ease;
+        }
+
+        .linkedin-link:hover {
+            background-color: #0077B5;
+            color: var(--white);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        .github-link:hover {
+            background-color: #171515;
+            color: var(--white);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(23, 21, 21, 0.3);
+        }
+
+        .social-link:hover::before {
+            opacity: 1;
+            transform: scale(1) rotate(0);
+        }
+
+        @keyframes slideFromBottom {
+            from {
+                opacity: 0;
+                transform: translateY(60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            opacity: 0;
+            animation: slideFromBottom 0.8s forwards;
+        }
+
+        .typewriter-container {
+            opacity: 0;
+            animation: slideFromBottom 0.8s forwards 0.2s;
+        }
+
+        .search-container {
+            opacity: 0;
+            animation: slideFromBottom 0.8s forwards 0.3s;
+        }
+
+        .doc-grid {
+            opacity: 0;
+            animation: slideFromBottom 0.8s forwards 0.4s;
+        }
+
+        footer {
+            opacity: 0;
+            animation: slideFromBottom 0.8s forwards 0.6s;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h1::before, h1::after {
+                font-size: 1.4rem;
+            }
+            
+            h1::before {
+                left: -35px;
+            }
+            
+            h1::after {
+                right: -35px;
+            }
+            
+            .typewriter {
+                font-size: 1rem;
+            }
+            
+            .doc-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-button {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+        <div class="container">
+            <h1>Centre de Documentation</h1>
+        
+        <div class="typewriter-container">
+            <div class="typewriter"></div>
+        </div>
+
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Rechercher dans la documentation...">
+        </div>
+
+        <div class="doc-grid">
+            <div class="doc-card" onclick="window.location.href='/theo/site-ecommerce/doc/Documentation Technique Théo VINTAGE.pdf'">
+                <div class="doc-icon">📄</div>
+                <div class="doc-title">Documentation Technique</div>
+                <div class="doc-description">Guide complet sur l'architecture technique du projet e-commerce Vintage</div>
+                <div class="doc-meta">
+                    <span><i class="fas fa-file-pdf"></i> PDF</span>
+                    <span><i class="fas fa-clock"></i> 25 min</span>
+                </div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='/theo/site-ecommerce/doc/Guide utlisation project e-commerce.pdf'">
+                <div class="doc-icon">📘</div>
+                <div class="doc-title">Guide d'Utilisation</div>
+                <div class="doc-description">Manuel utilisateur détaillé pour naviguer et utiliser le site e-commerce</div>
+                <div class="doc-meta">
+                    <span><i class="fas fa-file-pdf"></i> PDF</span>
+                    <span><i class="fas fa-clock"></i> 10 min</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    
+    <footer>
+        <div class="social-links">
+            <a href="https://www.linkedin.com/in/th%C3%A9o-houriez-160756296/" target="_blank" class="social-link linkedin-link">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a href="https://github.com/TheoHouriez1" target="_blank" class="social-link github-link">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typewriter = document.querySelector('.typewriter');
+            const texts = [
+                "Documentation Structurée 📚", 
+                "Guides Détaillés 📖", 
+                "Support Technique 🛠️",
+                "Ressources 🎓"
+            ];
+            
+            let textIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+            let typingSpeed = 100;
+            
+            function type() {
+                const currentText = texts[textIndex];
+                
+                if (isDeleting) {
+                    typewriter.textContent = currentText.substring(0, charIndex - 1);
+                    charIndex--;
+                    typingSpeed = 50;
+                } else {
+                    typewriter.textContent = currentText.substring(0, charIndex + 1);
+                    charIndex++;
+                    typingSpeed = 100;
+                }
+                
+                if (!isDeleting && charIndex === currentText.length) {
+                    typingSpeed = 1500;
+                    isDeleting = true;
+                } 
+                else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    textIndex = (textIndex + 1) % texts.length;
+                    typingSpeed = 500;
+                }
+                
+                setTimeout(type, typingSpeed);
+            }
+            
+            type();
+
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const docCards = document.querySelectorAll('.doc-card');
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                docCards.forEach(card => {
+                    const title = card.querySelector('.doc-title').textContent.toLowerCase();
+                    const description = card.querySelector('.doc-description').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
