@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ShoppingCart,
@@ -15,31 +15,33 @@ import {
   Loader
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import CartWidget from '../components/CartWidget';
+
 const BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+
 const ProductCard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Mémoriser l'extraction de l'ID du produit
+  const productId = useMemo(() => {
+    const hashValue = window.location.hash;
+    
+    if (hashValue) {
+      const hashPath = hashValue.substring(1);
+      const pathParts = hashPath.split('/');
+      const lastPart = pathParts[pathParts.length - 1];
       
-const getProductIdFromURL = () => {
-  const hashValue = window.location.hash;
-  
-  if (hashValue) {
-    const hashPath = hashValue.substring(1);
-    
-    const pathParts = hashPath.split('/');
-    
-    const lastPart = pathParts[pathParts.length - 1];
-    
-    if (!isNaN(lastPart)) {
-      return lastPart;
+      if (!isNaN(lastPart)) {
+        return lastPart;
+      }
     }
-  }
-  
-  return null;
-};
-  const productId = getProductIdFromURL();
+    
+    return null;
+  }, [location]);
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,18 +49,54 @@ const getProductIdFromURL = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAddedToCart, setShowAddedToCart] = useState(false);
-  const [imageUrls, setImageUrls] = useState([]);
+  const [addingToCart, setAddingToCart] = useState(false); // Nouvel état pour le loading
   const [showDescription, setShowDescription] = useState(false);
   const [showShipping, setShowShipping] = useState(false);
   const [showReturns, setShowReturns] = useState(false);
   const [showAuthInfo, setShowAuthInfo] = useState(false);
+
+  // Mémoriser les URLs d'images
+  const imageUrls = useMemo(() => {
+    if (!product) return [];
+
+    const processedUrls = [];
+    
+    if (product.image) processedUrls.push(product.image);
+    if (product.image2) processedUrls.push(product.image2);
+    if (product.image3) processedUrls.push(product.image3);
+
+    return processedUrls.length > 0 
+      ? processedUrls 
+      : ["https://placehold.co/600x800?text=Image+non+disponible"];
+  }, [product]);
+
+  // Mémoriser les dates de livraison
+  const deliveryDates = useMemo(() => {
+    const now = new Date();
+    
+    const formaterDateAvecJoursAjoutes = (date, joursAjoutes) => {
+      const nouvelleDate = new Date(date);
+      nouvelleDate.setDate(nouvelleDate.getDate() + joursAjoutes);
+      const jour = String(nouvelleDate.getDate()).padStart(2, '0');
+      const mois = String(nouvelleDate.getMonth() + 1).padStart(2, '0');
+      return `${jour}/${mois}`;
+    };
+
+    return {
+      received: formaterDateAvecJoursAjoutes(now, 0),
+      prepared: `${formaterDateAvecJoursAjoutes(now, 2)} - ${formaterDateAvecJoursAjoutes(now, 3)}`,
+      delivered: `${formaterDateAvecJoursAjoutes(now, 6)} - ${formaterDateAvecJoursAjoutes(now, 7)}`
+    };
+  }, []);
+
+  // Mémoriser le statut de stock
+  const isInStock = useMemo(() => product && product.stock > 0, [product]);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         
-    
         const response = await fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
           headers: {
             "Content-Type": "application/json",
@@ -73,6 +111,9 @@ const getProductIdFromURL = () => {
         const products = await response.json();
         const foundProduct = products.find(p => p.id === parseInt(productId));
         
+        if (!foundProduct) {
+          throw new Error('Produit non trouvé');
+        }
         
         const formattedProduct = {
           id: foundProduct.id,
@@ -88,14 +129,13 @@ const getProductIdFromURL = () => {
         };
         
         setProduct(formattedProduct);
-        setLoading(false);
         
-        console.log('Product fetched:', formattedProduct);
       } catch (error) {
         console.error("Erreur lors de la récupération du produit:", error);
         setError(error.message);
-        setLoading(false);
         navigate('*');
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -104,62 +144,46 @@ const getProductIdFromURL = () => {
     } else {
       setLoading(false);
       navigate('*');
-
     }
-  }, [productId, location]);
+  }, [productId, navigate]);
   
   useEffect(() => {
-    if (!product) return;
-  
-    window.scrollTo(0, 0);
-    const processedUrls = [];
-  
-    const processImage = (img) => {
-      if (img && typeof img === 'string') {
-        processedUrls.push(img);
-      }
-    };
-  
-    processImage(product.image);
-    processImage(product.image2);
-    processImage(product.image3);
-  
-    if (processedUrls.length === 0) {
-      processedUrls.push("https://placehold.co/600x800?text=Image+non+disponible");
+    if (product) {
+      window.scrollTo(0, 0);
     }
-  
-    setImageUrls(processedUrls);
   }, [product]);
-  
-  const handleQuantityChange = (change) => {
+
+  // Optimiser la gestion de la quantité avec useCallback
+  const handleQuantityChange = useCallback((change) => {
     if (!product) return;
     
     const newQuantity = Math.max(1, quantity + change);
     setQuantity(Math.min(newQuantity, product.stock));
-  };
+  }, [quantity, product]);
 
-  const handleAddToCart = async () => {
-    if (!product) return;
+  // Version optimisée d'ajout au panier
+  const handleAddToCart = useCallback(async () => {
+    if (!product || addingToCart) return;
     
-    const isInStock = product.stock > 0;
-    
-    if (!selectedSize && product.sizes?.length > 0) {
-      alert('Veuillez sélectionner une taille');
-      return;
-    }
+    // Validation rapide côté client
     if (!isInStock) {
       alert('Ce produit est actuellement épuisé.');
       return;
     }
     
+    if (!selectedSize && product.sizes?.length > 0) {
+      alert('Veuillez sélectionner une taille');
+      return;
+    }
+    
+    if (!user || !user.isAuthenticated) {
+      alert('Veuillez vous connecter pour ajouter des produits au panier');
+      return;
+    }
+    
+    setAddingToCart(true);
+    
     try {
-        if (!user || !user.isAuthenticated) {
-        alert('Veuillez vous connecter pour ajouter des produits au panier');
-        return;
-      }
-      
-      const userId = user.id;
-      
       const response = await fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/cart/add", {
         method: 'POST',
         headers: {
@@ -167,7 +191,7 @@ const getProductIdFromURL = () => {
           'X-API-TOKEN': API_TOKEN
         },
         body: JSON.stringify({
-          userId: userId,
+          userId: user.id,
           productId: product.id,
           quantity: quantity,
           size: selectedSize || null 
@@ -179,30 +203,20 @@ const getProductIdFromURL = () => {
         throw new Error(errorData.error || 'Erreur lors de l\'ajout au panier');
       }
       
+      // Feedback immédiat
       setShowAddedToCart(true);
       setTimeout(() => setShowAddedToCart(false), 2000);
       
     } catch (error) {
       console.error("Erreur lors de l'ajout au panier:", error);
       alert(`Erreur: ${error.message}`);
+    } finally {
+      setAddingToCart(false);
     }
-  };
+  }, [product, addingToCart, isInStock, selectedSize, user, quantity]);
 
-  const goBack = () => navigate(-1);
-  const formaterDateAvecJoursAjoutes = (date, joursAjoutes) => {
-    
-    const nouvelleDate = new Date(date);
-    nouvelleDate.setDate(nouvelleDate.getDate() + joursAjoutes);
-    const jour = String(nouvelleDate.getDate()).padStart(2, '0');
-    const mois = String(nouvelleDate.getMonth() + 1).padStart(2, '0');
-    return `${jour}/${mois}`;
-  };
-  const now = new Date();
-  const deliveryDates = {
-    received: formaterDateAvecJoursAjoutes(now, 0),
-    prepared: `${formaterDateAvecJoursAjoutes(now, 2)} - ${formaterDateAvecJoursAjoutes(now, 3)}`,
-    delivered: `${formaterDateAvecJoursAjoutes(now, 6)} - ${formaterDateAvecJoursAjoutes(now, 7)}`
-  };
+  const goBack = useCallback(() => navigate(-1), [navigate]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -213,6 +227,7 @@ const getProductIdFromURL = () => {
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -229,10 +244,9 @@ const getProductIdFromURL = () => {
       </div>
     );
   }
-  const isInStock = product && product.stock > 0;
+
   return product && (
     <div className="min-h-screen bg-gray-50">
-    
       <div className="bg-white border-b border-gray-200 mb-6">
         <div className="container mx-auto px-4 py-4 text-sm">
           <div className="flex items-center space-x-2 text-gray-500">
@@ -249,7 +263,6 @@ const getProductIdFromURL = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="lg:flex">
             <div className="lg:w-7/12 relative">
-        
               <div className="relative aspect-[4/5]">
                 <img
                   src={imageUrls[currentImageIndex]}
@@ -314,6 +327,7 @@ const getProductIdFromURL = () => {
                   </div>
                 )}
               </div>
+
               <div className="mb-6 bg-gray-50 p-3 rounded">
                 <div className="flex items-center space-x-1">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -380,14 +394,19 @@ const getProductIdFromURL = () => {
               <div className="mb-6">
                 <button
                   onClick={handleAddToCart}
-                  disabled={!isInStock}
+                  disabled={!isInStock || addingToCart}
                   className={`w-full py-3 rounded-md text-center uppercase font-medium flex items-center justify-center ${
-                    isInStock
+                    isInStock && !addingToCart
                       ? 'bg-black text-white hover:bg-gray-800'
                       : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                   } transition-colors`}
                 >
-                  {isInStock ? (
+                  {addingToCart ? (
+                    <>
+                      <Loader className="animate-spin mr-2" size={18} />
+                      Ajout en cours...
+                    </>
+                  ) : isInStock ? (
                     <>
                       <ShoppingCart className="mr-2" size={18} />
                       Ajouter au panier
@@ -500,6 +519,8 @@ const getProductIdFromURL = () => {
         </div>
       </div>
       
+      <CartWidget />
+      
       {showAddedToCart && (
         <div className="fixed bottom-4 right-4 bg-green-600 text-white py-3 px-4 rounded-md shadow-lg flex items-center">
           <Check size={18} className="mr-2" />
@@ -509,4 +530,5 @@ const getProductIdFromURL = () => {
     </div>
   );
 };
+
 export default ProductCard;

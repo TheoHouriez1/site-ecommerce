@@ -14,6 +14,7 @@ const EditProduct = () => {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [labelsEcologiques, setLabelsEcologiques] = useState([]);
   const [imagePreview, setImagePreview] = useState({
     image1: null,
     image2: null,
@@ -28,10 +29,13 @@ const EditProduct = () => {
     sizes: [],
     image: null,
     image2: null,
-    image3: null
+    image3: null,
+    ecoScore: '',
+    labelEcologique: ''
   });
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const ecoScoreOptions = ['A', 'B', 'C', 'D', 'E'];
 
   useEffect(() => {
     if (!user || !user.roles || !user.roles.includes('ROLE_ADMIN')) {
@@ -58,7 +62,9 @@ const EditProduct = () => {
           sizes: product.sizes || [],
           image: null,
           image2: null,
-          image3: null
+          image3: null,
+          ecoScore: product.ecoScore || '',
+          labelEcologique: product.labelEcologique || ''
         });
 
         setImagePreview({
@@ -93,7 +99,23 @@ const EditProduct = () => {
       }
     };
 
+    const fetchLabelsEcologiques = async () => {
+      try {
+        const response = await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/labelecologique', {
+          headers: {
+            'X-API-TOKEN': API_TOKEN
+          }
+        });
+        if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+        const data = await response.json();
+        setLabelsEcologiques(data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des labels écologiques:', error);
+      }
+    };
+
     fetchCategories();
+    fetchLabelsEcologiques();
   }, []);
 
   const handleInputChange = (e) => {
@@ -148,6 +170,10 @@ const EditProduct = () => {
       formData.sizes.forEach((size, index) => {
         formDataToSend.append(`sizes[${index}]`, size);
       });
+
+      // Ajout des nouvelles données environnementales
+      formDataToSend.append('ecoScore', formData.ecoScore || '');
+      formDataToSend.append('labelEcologique', formData.labelEcologique || '');
 
       if (formData.image) formDataToSend.append('image', formData.image);
       if (formData.image2) formDataToSend.append('image2', formData.image2);
@@ -319,6 +345,32 @@ const EditProduct = () => {
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.name_category}>
                     {cat.name_category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* EcoScore */}
+            <div>
+              <label htmlFor="ecoScore" className="block text-sm font-medium text-gray-700 mb-2">EcoScore</label>
+              <select id="ecoScore" name="ecoScore" value={formData.ecoScore} onChange={handleInputChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
+                <option value="">Sélectionner un EcoScore</option>
+                {ecoScoreOptions.map((score) => (
+                  <option key={score} value={score}>
+                    {score}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Label Écologique */}
+            <div>
+              <label htmlFor="labelEcologique" className="block text-sm font-medium text-gray-700 mb-2">Label écologique</label>
+              <select id="labelEcologique" name="labelEcologique" value={formData.labelEcologique} onChange={handleInputChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
+                <option value="">Sélectionner un label écologique</option>
+                {labelsEcologiques.map((label) => (
+                  <option key={label.id} value={label.label}>
+                    {label.label}
                   </option>
                 ))}
               </select>

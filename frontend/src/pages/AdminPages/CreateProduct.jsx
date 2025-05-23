@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X, ArrowLeft, Upload } from 'lucide-react';
 import AdminNavbar from '../../components/AdminNavbar';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from './../../context/AuthContext';
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
@@ -13,6 +13,7 @@ const CreateProduct = () => {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [labelsEcologiques, setLabelsEcologiques] = useState([]);
   const [imagePreview, setImagePreview] = useState({
     image1: null,
     image2: null,
@@ -28,10 +29,13 @@ const CreateProduct = () => {
     sizes: [],
     image: null,
     image2: null,
-    image3: null
+    image3: null,
+    ecoScore: '',
+    labelEcologique: ''
   });
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const ecoScoreOptions = ['A', 'B', 'C', 'D', 'E'];
 
   useEffect(() => {
     if (!user || !user.roles.includes('ROLE_ADMIN')) {
@@ -56,7 +60,23 @@ const CreateProduct = () => {
       }
     };
 
+    const fetchLabelsEcologiques = async () => {
+      try {
+        const response = await fetch('http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/labelecologique', {
+          headers: {
+            'X-API-TOKEN': API_TOKEN
+          }
+        });
+        if (!response.ok) throw new Error(`Erreur HTTP ! statut : ${response.status}`);
+        const data = await response.json();
+        setLabelsEcologiques(data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des labels écologiques:', error);
+      }
+    };
+
     fetchCategories();
+    fetchLabelsEcologiques();
   }, []);
 
   const handleInputChange = (e) => {
@@ -115,6 +135,10 @@ const CreateProduct = () => {
       formData.sizes.forEach((size, index) => {
         formDataToSend.append(`sizes[${index}]`, size);
       });
+
+      // Ajout des nouvelles données environnementales
+      if (formData.ecoScore) formDataToSend.append('ecoScore', formData.ecoScore);
+      if (formData.labelEcologique) formDataToSend.append('labelEcologique', formData.labelEcologique);
 
       if (formData.image) formDataToSend.append('image', formData.image);
       if (formData.image2) formDataToSend.append('image2', formData.image2);
@@ -276,6 +300,32 @@ const CreateProduct = () => {
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.name_category}>
                     {cat.name_category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* EcoScore */}
+            <div>
+              <label htmlFor="ecoScore" className="block text-sm font-medium text-gray-700 mb-2">EcoScore</label>
+              <select id="ecoScore" name="ecoScore" value={formData.ecoScore} onChange={handleInputChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
+                <option value="">Sélectionner un EcoScore</option>
+                {ecoScoreOptions.map((score) => (
+                  <option key={score} value={score}>
+                    {score}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Label Écologique */}
+            <div>
+              <label htmlFor="labelEcologique" className="block text-sm font-medium text-gray-700 mb-2">Label écologique</label>
+              <select id="labelEcologique" name="labelEcologique" value={formData.labelEcologique} onChange={handleInputChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl">
+                <option value="">Sélectionner un label écologique</option>
+                {labelsEcologiques.map((label) => (
+                  <option key={label.id} value={label.label}>
+                    {label.label}
                   </option>
                 ))}
               </select>

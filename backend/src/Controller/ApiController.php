@@ -24,6 +24,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\MailerInterface;
+use App\Entity\LabelEcologique;
 
 
 class ApiController extends AbstractController
@@ -109,71 +110,83 @@ class ApiController extends AbstractController
         ]);
     }
 
-    #[Route('/api/editProduct/{id}', name: 'api_update_product', methods: ['POST'])]
-    public function updateProduct(Request $request, int $id): JsonResponse
-    {
-        try {
-            $product = $this->entityManager->getRepository(Product::class)->find($id);
-            
-            if (!$product) {
-                return new JsonResponse(['error' => 'Produit non trouvé'], 404);
-            }
-
-            $uploadDir = $this->getParameter('image_dir');
-
-            // Mise à jour des champs
-            $product->setName($request->request->get('name'));
-            $product->setDescription($request->request->get('description'));
-            $product->setPrice((float)$request->request->get('price'));
-            $product->setStock((int)$request->request->get('stock'));
-            $product->setSizes($request->request->all('sizes'));
-            $product->setCategory($request->request->get('category')); // 🔥 Ajouté ici
-
-            // Gestion des images
-            if ($request->files->has('image')) {
-                $image = $request->files->get('image');
-                if ($product->getImage()) {
-                    $this->removeOldImage($product->getImage(), $uploadDir);
-                }
-                $newFilename = $this->uploadImage($image, $uploadDir);
-                $product->setImage($newFilename);
-            }
-
-            if ($request->files->has('image2')) {
-                $image2 = $request->files->get('image2');
-                if ($product->getImage2()) {
-                    $this->removeOldImage($product->getImage2(), $uploadDir);
-                }
-                $newFilename = $this->uploadImage($image2, $uploadDir);
-                $product->setImage2($newFilename);
-            }
-
-            if ($request->files->has('image3')) {
-                $image3 = $request->files->get('image3');
-                if ($product->getImage3()) {
-                    $this->removeOldImage($product->getImage3(), $uploadDir);
-                }
-                $newFilename = $this->uploadImage($image3, $uploadDir);
-                $product->setImage3($newFilename);
-            }
-
-            $this->entityManager->flush();
-
-            $jsonContent = $this->serializer->serialize($product, 'json', ['groups' => 'product:read']);
-
-            return new JsonResponse([
-                'success' => true,
-                'message' => 'Produit mis à jour avec succès',
-                'product' => json_decode($jsonContent, true)
-            ]);
-
-        } catch (\Exception $e) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+#[Route('/api/editProduct/{id}', name: 'api_update_product', methods: ['POST'])]
+public function updateProduct(Request $request, int $id): JsonResponse
+{
+    try {
+        $product = $this->entityManager->getRepository(Product::class)->find($id);
+        
+        if (!$product) {
+            return new JsonResponse(['error' => 'Produit non trouvé'], 404);
         }
+
+        $uploadDir = $this->getParameter('image_dir');
+
+        // Récupération des nouvelles données environnementales
+        $ecoScore = $request->request->get('ecoScore');
+        $labelEcologique = $request->request->get('labelEcologique');
+
+        // AJOUT DE DEBUG (temporaire)
+        error_log("EcoScore reçu (edit): " . ($ecoScore ?: 'VIDE'));
+        error_log("LabelEcologique reçu (edit): " . ($labelEcologique ?: 'VIDE'));
+
+        // Mise à jour des champs
+        $product->setName($request->request->get('name'));
+        $product->setDescription($request->request->get('description'));
+        $product->setPrice((float)$request->request->get('price'));
+        $product->setStock((int)$request->request->get('stock'));
+        $product->setSizes($request->request->all('sizes'));
+        $product->setCategory($request->request->get('category'));
+
+        // Mise à jour des nouvelles colonnes environnementales
+        $product->setEcoScore($ecoScore ?: null);
+        $product->setLabelEcologique($labelEcologique ?: null);
+
+        // Gestion des images
+        if ($request->files->has('image')) {
+            $image = $request->files->get('image');
+            if ($product->getImage()) {
+                $this->removeOldImage($product->getImage(), $uploadDir);
+            }
+            $newFilename = $this->uploadImage($image, $uploadDir);
+            $product->setImage($newFilename);
+        }
+
+        if ($request->files->has('image2')) {
+            $image2 = $request->files->get('image2');
+            if ($product->getImage2()) {
+                $this->removeOldImage($product->getImage2(), $uploadDir);
+            }
+            $newFilename = $this->uploadImage($image2, $uploadDir);
+            $product->setImage2($newFilename);
+        }
+
+        if ($request->files->has('image3')) {
+            $image3 = $request->files->get('image3');
+            if ($product->getImage3()) {
+                $this->removeOldImage($product->getImage3(), $uploadDir);
+            }
+            $newFilename = $this->uploadImage($image3, $uploadDir);
+            $product->setImage3($newFilename);
+        }
+
+        $this->entityManager->flush();
+
+        $jsonContent = $this->serializer->serialize($product, 'json', ['groups' => 'product:read']);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Produit mis à jour avec succès',
+            'product' => json_decode($jsonContent, true)
+        ]);
+
+    } catch (\Exception $e) {
+        return new JsonResponse([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     
     #[Route('/api/create-product', name: 'api_create_product', methods: ['POST'])]
@@ -186,22 +199,39 @@ class ApiController extends AbstractController
             $sizes = $request->request->all('sizes');
             $stock = $request->request->get('stock');
             $categoryName = $request->request->get('category');
+            
+            // AJOUT DES NOUVELLES VARIABLES
+            $ecoScore = $request->request->get('ecoScore');
+            $labelEcologique = $request->request->get('labelEcologique');
+            
             $image = $request->files->get('image');
             $image2 = $request->files->get('image2');
             $image3 = $request->files->get('image3');
-    
+
+            // AJOUT DE DEBUG (temporaire)
+            error_log("EcoScore reçu: " . ($ecoScore ?: 'VIDE'));
+            error_log("LabelEcologique reçu: " . ($labelEcologique ?: 'VIDE'));
+
             if (!$name || !$description || !$price || !$stock || empty($sizes) || !$categoryName) {
                 return new JsonResponse(['error' => 'Tous les champs sont obligatoires'], 400);
             }
-    
+
             $product = new Product();
             $product->setName($name);
             $product->setDescription($description);
             $product->setPrice((float) $price);
             $product->setSizes($sizes);
             $product->setStock((int) $stock);
-            $product->setCategory($categoryName); // <-- ici juste le nom de la catégorie en string
-    
+            $product->setCategory($categoryName);
+            
+            // AJOUT DES NOUVELLES ASSIGNATIONS
+            if ($ecoScore) {
+                $product->setEcoScore($ecoScore);
+            }
+            if ($labelEcologique) {
+                $product->setLabelEcologique($labelEcologique);
+            }
+
             if ($image) {
                 $imageName = uniqid() . '.' . $image->guessExtension();
                 $image->move($this->getParameter('image_dir'), $imageName);
@@ -217,10 +247,10 @@ class ApiController extends AbstractController
                 $image3->move($this->getParameter('image_dir'), $imageName3);
                 $product->setImage3($imageName3);
             }
-    
+
             $this->entityManager->persist($product);
             $this->entityManager->flush();
-    
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Produit créé avec succès',
@@ -232,12 +262,15 @@ class ApiController extends AbstractController
                     'sizes' => $product->getSizes(),
                     'stock' => $product->getStock(),
                     'category' => $product->getCategory(),
+                    // AJOUT DANS LA RÉPONSE
+                    'ecoScore' => $product->getEcoScore(),
+                    'labelEcologique' => $product->getLabelEcologique(),
                     'image' => $product->getImage(),
                     'image2' => $product->getImage2(),
                     'image3' => $product->getImage3()
                 ]
             ], 201);
-    
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'error' => 'Erreur interne du serveur',
@@ -249,12 +282,9 @@ class ApiController extends AbstractController
         }
     }
     
-    
-
     #[Route('/api/delete-product/{id}', name: 'api_delete_product', methods: ['DELETE', 'OPTIONS'])]
     public function deleteProduct(int $id): JsonResponse
     {
-        // Gérer la requête CORS preflight
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             $response = new JsonResponse(null, 204);
             $response->headers->set('Access-Control-Allow-Origin', '*');
@@ -656,17 +686,14 @@ class ApiController extends AbstractController
 
     $cartItemRepo = $this->entityManager->getRepository(CartItem::class);
 
-    // Vérifie si l'item existe déjà pour ce user et produit
     $existingItem = $cartItemRepo->findOneBy([
         'userId' => $userId,
         'productId' => $productId
     ]);
 
     if ($existingItem) {
-        // On incrémente juste la quantité
         $existingItem->setQuantity($existingItem->getQuantity() + $quantity);
     } else {
-        // Sinon on crée un nouvel item
         $cartItem = new CartItem();
         $cartItem->setUserId($userId);
         $cartItem->setProductId($productId);
@@ -709,5 +736,13 @@ class ApiController extends AbstractController
         'success' => true,
         'message' => 'Token valide, accès autorisé ✅'
     ]);
-}
+    }
+    #[Route('/api/labelecologique', name: 'api_label_ecologique', methods: ['GET'])]
+    public function getLabelEcologique(): JsonResponse
+    {
+        $labels = $this->entityManager->getRepository(LabelEcologique::class)->findAll();
+        $jsonContent = $this->serializer->serialize($labels, 'json');
+
+        return new JsonResponse($jsonContent, 200, [], true);
+    }
 }

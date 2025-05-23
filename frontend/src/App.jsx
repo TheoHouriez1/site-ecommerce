@@ -44,7 +44,6 @@ function App() {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/guide-tailles" element={<GuideTaille />} />
         <Route path="*" element={<NotFoundPage />} />
-
       </Routes>
     </HashRouter>
   );

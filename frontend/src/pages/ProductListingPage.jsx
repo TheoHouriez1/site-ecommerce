@@ -19,7 +19,8 @@ const ProductListingPage = () => {
     category: '',
     minPrice: '',
     maxPrice: '',
-    inStock: false
+    inStock: false,
+    ecoScore: ''
   });
   const [sortBy, setSortBy] = useState('default');
   const [search, setSearch] = useState('');
@@ -83,7 +84,8 @@ const ProductListingPage = () => {
       category: '',
       minPrice: '',
       maxPrice: '',
-      inStock: false
+      inStock: false,
+      ecoScore: ''
     });
     setSearch('');
     setSortBy('default');
@@ -96,7 +98,8 @@ const ProductListingPage = () => {
       const matchMinPrice = !filters.minPrice || product.price >= parseFloat(filters.minPrice);
       const matchMaxPrice = !filters.maxPrice || product.price <= parseFloat(filters.maxPrice);
       const matchStock = !filters.inStock || (product.stock && product.stock > 0);
-      return matchSearch && matchCategory && matchMinPrice && matchMaxPrice && matchStock;
+      const matchEcoScore = !filters.ecoScore || product.ecoScore === filters.ecoScore;
+      return matchSearch && matchCategory && matchMinPrice && matchMaxPrice && matchStock && matchEcoScore;
     })
     .sort((a, b) => {
       switch(sortBy) {
@@ -184,14 +187,14 @@ const ProductListingPage = () => {
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   className={`flex items-center gap-2 py-2 px-4 rounded-md border transition-all ${
-                    isFilterOpen || (filters.category || filters.minPrice || filters.maxPrice || filters.inStock)
+                    isFilterOpen || (filters.category || filters.minPrice || filters.maxPrice || filters.inStock || filters.ecoScore)
                       ? 'border-blue-600 text-blue-600 bg-blue-50'
                       : 'border-gray-200 text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <Sliders size={18} />
                   Filtres
-                  {(filters.category || filters.minPrice || filters.maxPrice || filters.inStock) && (
+                  {(filters.category || filters.minPrice || filters.maxPrice || filters.inStock || filters.ecoScore) && (
                     <span className="flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-xs rounded-full">
                       {Object.values(filters).filter(value => typeof value === 'string' ? Boolean(value) : value).length}
                     </span>
@@ -244,6 +247,26 @@ const ProductListingPage = () => {
                         className="w-24 p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                       />
                       <span className="text-gray-500">€</span>
+                    </div>
+                  </div>
+                  
+                  {/* EcoScore Filter */}
+                  <div className="w-full md:w-auto">
+                    <h3 className="font-medium text-gray-700 mb-3 text-sm">EcoScore</h3>
+                    <div className="relative">
+                      <select 
+                        value={filters.ecoScore}
+                        onChange={(e) => handleFilterChange('ecoScore', e.target.value)}
+                        className="appearance-none bg-gray-50 border border-gray-200 rounded-md py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent min-w-28"
+                      >
+                        <option value="">Tous</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-3 text-gray-400 pointer-events-none" size={16} />
                     </div>
                   </div>
                   
@@ -325,6 +348,22 @@ const ProductListingPage = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* EcoScore Badge */}
+                    {product.ecoScore && (
+                      <div className="absolute top-2 right-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                          product.ecoScore === 'A' ? 'bg-green-600' :
+                          product.ecoScore === 'B' ? 'bg-green-400' :
+                          product.ecoScore === 'C' ? 'bg-yellow-500' :
+                          product.ecoScore === 'D' ? 'bg-orange-500' :
+                          product.ecoScore === 'E' ? 'bg-red-500' :
+                          'bg-gray-400'
+                        }`}>
+                          {product.ecoScore}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className={`p-4 ${isMobile ? 'w-2/3' : ''}`}>
@@ -336,6 +375,23 @@ const ProductListingPage = () => {
                       <p className="text-gray-500 text-sm">
                         Tailles: {product.sizes.join(", ")}
                       </p>
+                    )}
+                    
+                    {/* EcoScore info */}
+                    {product.ecoScore && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-600">EcoScore:</span>
+                        <span className={`text-xs font-medium ${
+                          product.ecoScore === 'A' ? 'text-green-600' :
+                          product.ecoScore === 'B' ? 'text-green-500' :
+                          product.ecoScore === 'C' ? 'text-yellow-600' :
+                          product.ecoScore === 'D' ? 'text-orange-600' :
+                          product.ecoScore === 'E' ? 'text-red-600' :
+                          'text-gray-600'
+                        }`}>
+                          {product.ecoScore}
+                        </span>
+                      </div>
                     )}
                     
                     {/* Price */}

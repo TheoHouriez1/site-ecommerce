@@ -52,6 +52,14 @@ class Product
     #[Groups(['product:read'])]
     private ?string $image3 = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['product:read'])]
+    private ?string $ecoScore = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['product:read'])]
+    private ?string $labelEcologique = null;
+
     public function __construct()
     {
         $this->sizes = [];
@@ -158,6 +166,28 @@ class Product
     public function setImage3(?string $image3): static
     {
         $this->image3 = $image3;
+        return $this;
+    }
+
+    public function getEcoScore(): ?string
+    {
+        return $this->ecoScore;
+    }
+
+    public function setEcoScore(?string $ecoScore): static
+    {
+        $this->ecoScore = $ecoScore;
+        return $this;
+    }
+
+    public function getLabelEcologique(): ?string
+    {
+        return $this->labelEcologique;
+    }
+
+    public function setLabelEcologique(?string $labelEcologique): static
+    {
+        $this->labelEcologique = $labelEcologique;
         return $this;
     }
 }
