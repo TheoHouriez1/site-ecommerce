@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -10,16 +10,17 @@ import {
   Home,
   CreditCard,
   Clock,
-  Plus as PlusIcon
+  Plus as PlusIcon,
+  User,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 const BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
+const API_BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api';
 
-const OrderDetail = () => {
+const AdminOrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [order, setOrder] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,18 +30,15 @@ const OrderDetail = () => {
   const [showShipping, setShowShipping] = useState(false);
   const [showOrderInfo, setShowOrderInfo] = useState(false);
   const [showPaymentInfo, setShowPaymentInfo] = useState(false);
+  const [showCustomerInfo, setShowCustomerInfo] = useState(false);
 
   useEffect(() => {
-    if (!user || !user.isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        const productsResponse = await fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/product", {
+        // Récupérer les produits
+        const productsResponse = await fetch(`${API_BASE_URL}/product`, {
           headers: {
             "Content-Type": "application/json",
             "X-API-TOKEN": API_TOKEN
@@ -54,7 +52,8 @@ const OrderDetail = () => {
         const productsData = await productsResponse.json();
         setProducts(productsData);
         
-        const ordersResponse = await fetch("http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api/orders", {
+        // Récupérer les commandes
+        const ordersResponse = await fetch(`${API_BASE_URL}/orders`, {
           headers: {
             "Content-Type": "application/json",
             "X-API-TOKEN": API_TOKEN
@@ -67,16 +66,16 @@ const OrderDetail = () => {
         
         const ordersData = await ordersResponse.json();
         
-        const userOrder = ordersData.find(o => o.id === parseInt(orderId) && o.id_user === user.id);
+        const targetOrder = ordersData.find(o => o.id === parseInt(orderId));
         
-        if (!userOrder) {
-          throw new Error("Commande non trouvée ou non autorisée");
+        if (!targetOrder) {
+          throw new Error("Commande non trouvée");
         }
         
-        setOrder(userOrder);
+        setOrder(targetOrder);
         
-        if (userOrder.article) {
-          const parsedArticles = parseArticles(userOrder.article);
+        if (targetOrder.article) {
+          const parsedArticles = parseArticles(targetOrder.article);
           
           const enrichedArticles = parsedArticles.map(article => {
             const product = productsData.find(p => p.name.toLowerCase() === article.name.toLowerCase());
@@ -99,7 +98,7 @@ const OrderDetail = () => {
     };
     
     fetchData();
-  }, [orderId, user, navigate]);
+  }, [orderId]);
 
   const parseArticles = (articleString) => {
     if (!articleString) return [];
@@ -175,7 +174,7 @@ const OrderDetail = () => {
           <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md mx-auto">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Chargement...</h2>
-            <p className="text-gray-600">Veuillez patienter pendant que nous récupérons les détails de votre commande</p>
+            <p className="text-gray-600">Veuillez patienter pendant que nous récupérons les détails de la commande</p>
           </div>
         </div>
       </div>
@@ -193,11 +192,11 @@ const OrderDetail = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Erreur</h2>
             <p className="text-gray-600 mb-4">{error}</p>
             <button 
-              onClick={() => navigate('/orders')} 
+              onClick={() => navigate('/admin/orders')} 
               className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
             >
               <ArrowLeft size={18} className="mr-2" /> 
-              Retour à mes commandes
+              Retour aux commandes
             </button>
           </div>
         </div>
@@ -216,11 +215,11 @@ const OrderDetail = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Commande introuvable</h2>
             <p className="text-gray-600 mb-4">Nous n'avons pas pu trouver la commande demandée.</p>
             <button 
-              onClick={() => navigate('/orders')} 
+              onClick={() => navigate('/admin/orders')} 
               className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
             >
               <ArrowLeft size={18} className="mr-2" /> 
-              Retour à mes commandes
+              Retour aux commandes
             </button>
           </div>
         </div>
@@ -231,19 +230,21 @@ const OrderDetail = () => {
   const deliveryDates = calculateDeliveryDates();
   const orderStatus = getOrderStatus();
   const subtotal = calculateSubtotal();
+  const customerName = order.prenom && order.nom ? `${order.prenom} ${order.nom}` : 'Client inconnu';
 
   return (
     <div className="min-h-screen bg-gray-50">
+      
       {/* Breadcrumb Navigation */}
-      <div className="bg-white border-b border-gray-200 mb-6">
+      <div className="bg-white border-b border-gray-200 mb-6 mt-16">
         <div className="container mx-auto px-4 py-4 text-sm">
           <div className="flex items-center space-x-2 text-gray-500">
-            <button onClick={() => navigate('/')} className="hover:text-black transition-colors">
-              Accueil
+            <button onClick={() => navigate('/admin')} className="hover:text-black transition-colors">
+              Dashboard Admin
             </button>
             <span>/</span>
-            <button onClick={() => navigate('/orders')} className="hover:text-black transition-colors">
-              Mes commandes
+            <button onClick={() => navigate('/admin/orders')} className="hover:text-black transition-colors">
+              Gestion des commandes
             </button>
             <span>/</span>
             <span className="text-black font-medium">Commande #{order.id}</span>
@@ -256,22 +257,29 @@ const OrderDetail = () => {
           {/* Retour aux commandes */}
           <div className="w-full mb-6">
             <button 
-              onClick={() => navigate('/orders')} 
+              onClick={() => navigate('/admin/orders')} 
               className="flex items-center text-gray-600 hover:text-black transition-colors"
             >
               <ArrowLeft size={18} className="mr-2" /> 
-              Retour à mes commandes
+              Retour à la gestion des commandes
             </button>
           </div>
           
           {/* Titre de la page */}
           <div className="w-full mb-8">
-            <h1 className="text-2xl md:text-3xl font-medium text-gray-800">
-              Détails de la commande <span className="font-bold">#{order.id}</span>
-            </h1>
-            <p className="text-gray-500 mt-2">
-              Commandée le {formatDate(order.date_commande)}
-            </p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-medium text-gray-800">
+                  Détails de la commande <span className="font-bold">#{order.id}</span>
+                </h1>
+                <p className="text-gray-500 mt-2">
+                  Commandée le {formatDate(order.date_commande)} par {customerName}
+                </p>
+              </div>
+              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                Vue Administrateur
+              </div>
+            </div>
           </div>
           
           {/* Colonne principale */}
@@ -370,6 +378,46 @@ const OrderDetail = () => {
             
             {/* Accordéons d'informations */}
             <div className="space-y-4 mb-8">
+              {/* Informations client */}
+              <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
+                <button 
+                  className="py-3 px-4 w-full flex items-center justify-between text-left bg-gray-50" 
+                  onClick={() => setShowCustomerInfo(!showCustomerInfo)}
+                >
+                  <div className="flex items-center">
+                    <User size={18} className="mr-2 text-gray-700" />
+                    <span className="font-medium text-gray-700">Informations client</span>
+                  </div>
+                  <PlusIcon size={16} className={`transform transition-transform text-black ${showCustomerInfo ? 'rotate-45' : ''}`} />
+                </button>
+                {showCustomerInfo && (
+                  <div className="p-4 text-sm border-t border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="font-medium mb-1">Nom complet :</p>
+                        <p className="text-gray-700">{customerName}</p>
+                      </div>
+                      <div>
+                        <p className="font-medium mb-1">ID utilisateur :</p>
+                        <p className="text-gray-700">#{order.id_user}</p>
+                      </div>
+                      {order.email && (
+                        <div>
+                          <p className="font-medium mb-1">Email :</p>
+                          <p className="text-gray-700">{order.email}</p>
+                        </div>
+                      )}
+                      {order.telephone && (
+                        <div>
+                          <p className="font-medium mb-1">Téléphone :</p>
+                          <p className="text-gray-700">{order.telephone}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Informations de livraison */}
               <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
                 <button 
@@ -393,7 +441,7 @@ const OrderDetail = () => {
                       <p className="text-gray-700">Livraison standard</p>
                     </div>
                     <div className="mt-4 pt-3 border-t border-gray-100">
-                      <p className="text-xs text-gray-500">Si vous avez des questions concernant votre livraison, contactez notre service client.</p>
+                      <p className="text-xs text-gray-500">Statut calculé automatiquement selon la date de commande.</p>
                     </div>
                   </div>
                 )}
@@ -454,7 +502,7 @@ const OrderDetail = () => {
                       <p className="text-gray-700">Carte bancaire</p>
                     </div>
                     <div className="mt-4 pt-3 border-t border-gray-100">
-                      <p className="text-xs text-gray-500">Pour toute question concernant votre paiement, veuillez contacter notre service client.</p>
+                      <p className="text-xs text-gray-500">Paiement traité automatiquement lors de la commande.</p>
                     </div>
                   </div>
                 )}
@@ -491,9 +539,30 @@ const OrderDetail = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="bg-blue-50 p-4 rounded-md mb-6">
+                <div className="flex">
+                  <User size={20} className="flex-shrink-0 text-blue-400 mr-3" />
+                  <div>
+                    <p className="font-medium text-blue-700">Client</p>
+                    <p className="text-sm text-blue-600 mt-1">{customerName}</p>
+                    <p className="text-xs text-blue-500 mt-1">ID: #{order.id_user}</p>
+                  </div>
+                </div>
+              </div>
               
-              <a href="mailto:contact@shop.com" className="block w-full py-3 px-4 bg-black text-white text-center rounded-md hover:bg-gray-800 transition-colors">
-                Besoin d'aide ?
+              <button 
+                onClick={() => navigate('/admin/orders')}
+                className="block w-full py-3 px-4 bg-black text-white text-center rounded-md hover:bg-gray-800 transition-colors mb-3"
+              >
+                Retour à la liste
+              </button>
+              
+              <a 
+                href="mailto:admin@shop.com" 
+                className="block w-full py-3 px-4 bg-gray-100 text-gray-700 text-center rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Contacter le support
               </a>
             </div>
           </div>
@@ -503,4 +572,4 @@ const OrderDetail = () => {
   );
 };
 
-export default OrderDetail;
+export default AdminOrderDetails;

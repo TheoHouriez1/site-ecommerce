@@ -16,7 +16,6 @@ import {
 import { useCart } from './CartContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
-// Composant CartBadge mémorisé séparément
 const CartBadge = React.memo(({ totalItems, isScrolled, onCartClick }) => (
   <button 
     onClick={onCartClick}
@@ -308,16 +307,6 @@ export const NavbarComponent = () => {
           } overflow-hidden ${isScrolled ? 'bg-white' : 'bg-black bg-opacity-80'}`}
         >
           <div className="py-6 space-y-5">
-            <button 
-              onClick={() => handleMobileNavigate('/products')}
-              className={`block w-full text-left px-4 py-3 text-base font-medium transition-colors duration-300 ${
-                isScrolled 
-                  ? 'text-gray-800 hover:bg-gray-50' 
-                  : 'text-white hover:bg-gray-800'
-              }`}
-            >
-              Produits
-            </button>
             <button 
               onClick={() => handleMobileNavigate('/contact')}
               className={`block w-full text-left px-4 py-3 text-base font-medium transition-colors duration-300 ${

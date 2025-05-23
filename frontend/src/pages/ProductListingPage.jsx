@@ -128,7 +128,6 @@ const ProductListingPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavbarComponent />
-      
       {/* Hero */}
       <div className="bg-black text-white py-16 md:py-20">
         <div className="container mx-auto px-4 text-center">
@@ -348,35 +347,17 @@ const ProductListingPage = () => {
                         </div>
                       </div>
                     )}
-
-                    {/* EcoScore Badge */}
-                    {product.ecoScore && (
-                      <div className="absolute top-2 right-2">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                          product.ecoScore === 'A' ? 'bg-green-600' :
-                          product.ecoScore === 'B' ? 'bg-green-400' :
-                          product.ecoScore === 'C' ? 'bg-yellow-500' :
-                          product.ecoScore === 'D' ? 'bg-orange-500' :
-                          product.ecoScore === 'E' ? 'bg-red-500' :
-                          'bg-gray-400'
-                        }`}>
-                          {product.ecoScore}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div className={`p-4 ${isMobile ? 'w-2/3' : ''}`}>
                   <div onClick={() => handleProductClick(product)} className="space-y-1.5">
                     <h2 className="text-base font-medium text-gray-800">{product.name}</h2>
-                    
                     {/* Size label */}
                     {product.sizes && product.sizes.length > 0 && (
                       <p className="text-gray-500 text-sm">
                         Tailles: {product.sizes.join(", ")}
                       </p>
                     )}
-                    
                     {/* EcoScore info */}
                     {product.ecoScore && (
                       <div className="flex items-center gap-2">

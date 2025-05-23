@@ -20,6 +20,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx';
 import OrderDetail from './pages/OrderDetail.jsx';
 import LoginComponent from './components/LoginComponent.jsx';
 import RegisterComponent from './components/RegisterComponent.jsx';
+import AdminOrderDetails from './pages/AdminPages/AdminOrderDetails.jsx';
 function App() {  
   return (
     <HashRouter>
@@ -43,6 +44,7 @@ function App() {
         <Route path="/politique-confidentialite" element={<PrivacyPolicyPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/guide-tailles" element={<GuideTaille />} />
+        <Route path="/admin/orders/:orderId" element={<AdminOrderDetails />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </HashRouter>

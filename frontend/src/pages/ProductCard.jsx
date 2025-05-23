@@ -49,13 +49,12 @@ const ProductCard = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAddedToCart, setShowAddedToCart] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false); // Nouvel état pour le loading
+  const [addingToCart, setAddingToCart] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showShipping, setShowShipping] = useState(false);
   const [showReturns, setShowReturns] = useState(false);
   const [showAuthInfo, setShowAuthInfo] = useState(false);
 
-  // Mémoriser les URLs d'images
   const imageUrls = useMemo(() => {
     if (!product) return [];
 

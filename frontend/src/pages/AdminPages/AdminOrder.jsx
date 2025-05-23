@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../components/AdminNavbar';
 import { 
   Package, 
@@ -15,26 +16,38 @@ import {
   AlertCircle,
   Truck,
   Eye,
-  Edit,
-  Trash2
+  Box
 } from 'lucide-react';
 
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 const API_BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api';
 
+// Fonction pour calculer le statut automatique basé sur la date de commande
+const getOrderStatus = (orderDate) => {
+  const orderDateTime = new Date(orderDate);
+  const daysPassed = Math.floor((new Date() - orderDateTime) / (1000 * 60 * 60 * 24));
+  
+  if (daysPassed < 1) return "En attente";
+  if (daysPassed < 3) return "En préparation";
+  if (daysPassed < 5) return "Expédiée";
+  return "Livrée";
+};
+
 // Composant OrderCard pour mobile
-const OrderCard = ({ order, onViewDetails, onEdit, onDelete }) => {
+const OrderCard = ({ order, onViewDetails }) => {
+  const orderStatus = getOrderStatus(order.date_commande);
+
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
-      case 'en_attente':
+      case 'en attente':
         return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'confirmee':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'expediee':
+      case 'en préparation':
+        return <Box className="w-4 h-4 text-orange-500" />;
+      case 'expédiée':
         return <Truck className="w-4 h-4 text-blue-500" />;
-      case 'livree':
+      case 'livrée':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'annulee':
+      case 'annulée':
         return <XCircle className="w-4 h-4 text-red-500" />;
       default:
         return <AlertCircle className="w-4 h-4 text-gray-500" />;
@@ -43,15 +56,15 @@ const OrderCard = ({ order, onViewDetails, onEdit, onDelete }) => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'en_attente':
+      case 'en attente':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'confirmee':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'expediee':
+      case 'en préparation':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'expédiée':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'livree':
+      case 'livrée':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'annulee':
+      case 'annulée':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -83,9 +96,9 @@ const OrderCard = ({ order, onViewDetails, onEdit, onDelete }) => {
             {formatDate(order.date_commande)}
           </p>
         </div>
-        <div className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center ${getStatusColor(order.statut)}`}>
-          {getStatusIcon(order.statut)}
-          <span className="ml-1">{order.statut || 'Inconnu'}</span>
+        <div className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center ${getStatusColor(orderStatus)}`}>
+          {getStatusIcon(orderStatus)}
+          <span className="ml-1">{orderStatus}</span>
         </div>
       </div>
 
@@ -103,10 +116,10 @@ const OrderCard = ({ order, onViewDetails, onEdit, onDelete }) => {
           </span>
         </div>
 
-        {order.adresse_livraison && (
+        {order.address && (
           <div className="flex items-start text-sm text-gray-600">
             <MapPin className="w-4 h-4 mr-2 text-gray-400 mt-0.5" />
-            <span className="flex-1">{order.adresse_livraison}</span>
+            <span className="flex-1">{order.address}</span>
           </div>
         )}
       </div>
@@ -115,24 +128,10 @@ const OrderCard = ({ order, onViewDetails, onEdit, onDelete }) => {
       <div className="flex space-x-2 pt-2 border-t border-gray-100">
         <button 
           onClick={() => onViewDetails(order)}
-          className="flex-1 flex items-center justify-center px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+          className="w-full flex items-center justify-center px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
         >
           <Eye className="w-4 h-4 mr-1" />
-          Voir
-        </button>
-        <button 
-          onClick={() => onEdit(order)}
-          className="flex-1 flex items-center justify-center px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
-        >
-          <Edit className="w-4 h-4 mr-1" />
-          Modifier
-        </button>
-        <button 
-          onClick={() => onDelete(order)}
-          className="flex-1 flex items-center justify-center px-3 py-2 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
-        >
-          <Trash2 className="w-4 h-4 mr-1" />
-          Supprimer
+          Voir les détails
         </button>
       </div>
     </div>
@@ -140,18 +139,20 @@ const OrderCard = ({ order, onViewDetails, onEdit, onDelete }) => {
 };
 
 // Composant TableRow pour desktop
-const OrderTableRow = ({ order, onViewDetails, onEdit, onDelete }) => {
+const OrderTableRow = ({ order, onViewDetails }) => {
+  const orderStatus = getOrderStatus(order.date_commande);
+
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
-      case 'en_attente':
+      case 'en attente':
         return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'confirmee':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'expediee':
+      case 'en préparation':
+        return <Box className="w-4 h-4 text-orange-500" />;
+      case 'expédiée':
         return <Truck className="w-4 h-4 text-blue-500" />;
-      case 'livree':
+      case 'livrée':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'annulee':
+      case 'annulée':
         return <XCircle className="w-4 h-4 text-red-500" />;
       default:
         return <AlertCircle className="w-4 h-4 text-gray-500" />;
@@ -183,8 +184,8 @@ const OrderTableRow = ({ order, onViewDetails, onEdit, onDelete }) => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
-          {getStatusIcon(order.statut)}
-          <span className="ml-2 text-sm text-gray-900">{order.statut || 'Inconnu'}</span>
+          {getStatusIcon(orderStatus)}
+          <span className="ml-2 text-sm text-gray-900">{orderStatus}</span>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -196,20 +197,6 @@ const OrderTableRow = ({ order, onViewDetails, onEdit, onDelete }) => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button 
-            onClick={() => onEdit(order)}
-            className="text-green-600 hover:text-green-900 transition-colors"
-            title="Modifier"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => onDelete(order)}
-            className="text-red-600 hover:text-red-900 transition-colors"
-            title="Supprimer"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
         </div>
       </td>
     </tr>
@@ -217,6 +204,7 @@ const OrderTableRow = ({ order, onViewDetails, onEdit, onDelete }) => {
 };
 
 const AdminOrders = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -257,12 +245,15 @@ const AdminOrders = () => {
   // Filtrage et tri des commandes
   const filteredAndSortedOrders = useMemo(() => {
     let filtered = orders.filter(order => {
+      const orderStatus = getOrderStatus(order.date_commande);
+      const ordername = order.prenom && order.nom ? `${order.prenom} ${order.nom}` : 'Client inconnu';
+      
       const matchesSearch = searchTerm === '' || 
         order.id?.toString().includes(searchTerm) ||
-        order.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.statut?.toLowerCase().includes(searchTerm.toLowerCase());
+        ordername?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        orderStatus?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesStatus = statusFilter === 'all' || order.statut === statusFilter;
+      const matchesStatus = statusFilter === 'all' || orderStatus.toLowerCase() === statusFilter.toLowerCase();
       
       return matchesSearch && matchesStatus;
     });
@@ -275,9 +266,9 @@ const AdminOrders = () => {
         case 'date_desc':
           return new Date(b.date_commande) - new Date(a.date_commande);
         case 'amount_asc':
-          return (a.total || 0) - (b.total || 0);
+          return (a.price || 0) - (b.price || 0);
         case 'amount_desc':
-          return (b.total || 0) - (a.total || 0);
+          return (b.price || 0) - (a.price || 0);
         case 'id_asc':
           return (a.id || 0) - (b.id || 0);
         case 'id_desc':
@@ -292,36 +283,7 @@ const AdminOrders = () => {
 
   // Handlers pour les actions
   const handleViewDetails = (order) => {
-    console.log('Voir détails:', order);
-    // Implémenter la logique de visualisation
-  };
-
-  const handleEdit = (order) => {
-    console.log('Modifier:', order);
-    // Implémenter la logique de modification
-  };
-
-  const handleDelete = async (order) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la commande #${order.id} ?`)) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/orders/${order.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-TOKEN': API_TOKEN
-          }
-        });
-
-        if (response.ok) {
-          setOrders(orders.filter(o => o.id !== order.id));
-        } else {
-          throw new Error('Erreur lors de la suppression');
-        }
-      } catch (err) {
-        console.error('Erreur:', err);
-        alert('Erreur lors de la suppression de la commande');
-      }
-    }
+    navigate(`/admin/orders/${order.id}`);
   };
 
   if (loading) {
@@ -387,11 +349,10 @@ const AdminOrders = () => {
             className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
           >
             <option value="all">Tous les statuts</option>
-            <option value="en_attente">En attente</option>
-            <option value="confirmee">Confirmée</option>
-            <option value="expediee">Expédiée</option>
-            <option value="livree">Livrée</option>
-            <option value="annulee">Annulée</option>
+            <option value="En attente">En attente</option>
+            <option value="En préparation">En préparation</option>
+            <option value="Expédiée">Expédiée</option>
+            <option value="Livrée">Livrée</option>
           </select>
           <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
@@ -435,8 +396,6 @@ const AdminOrders = () => {
                 key={order.id}
                 order={order}
                 onViewDetails={handleViewDetails}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
               />
             ))}
           </div>
@@ -472,8 +431,6 @@ const AdminOrders = () => {
                     key={order.id}
                     order={order}
                     onViewDetails={handleViewDetails}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
                   />
                 ))}
               </tbody>
