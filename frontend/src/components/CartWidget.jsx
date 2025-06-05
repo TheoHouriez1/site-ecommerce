@@ -5,16 +5,12 @@ import { useCart } from './CartContext';
 
 const BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/uploads/images/';
 
-// Composant CartItem mémorisé pour éviter les re-rendus
 const CartPreviewItem = ({ item, index }) => {
-  // Construction correcte de l'URL de l'image
   const imageUrl = useMemo(() => {
     if (item.image) {
-      // Si l'image contient déjà l'URL complète
       if (item.image.startsWith('http')) {
         return item.image;
       }
-      // Sinon, construire l'URL complète
       return BASE_URL + item.image;
     }
     return "https://placehold.co/100x100?text=Image";
@@ -53,7 +49,6 @@ const CartWidget = () => {
   const { cart } = useCart();
   const [showCartPreview, setShowCartPreview] = useState(false);
 
-  // Mémoriser les calculs du panier
   const cartStats = useMemo(() => {
     const totalItems = cart.reduce((total, item) => total + (item.quantity || 0), 0);
     const totalPrice = cart.reduce((total, item) => {
@@ -65,12 +60,10 @@ const CartWidget = () => {
     return { totalItems, totalPrice };
   }, [cart]);
 
-  // Mémoriser les articles à afficher (limite de 3)
   const previewItems = useMemo(() => {
     return cart.slice(0, 3);
   }, [cart]);
 
-  // Fermer l'aperçu du panier quand on clique ailleurs
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showCartPreview && !event.target.closest('.cart-widget')) {

@@ -37,7 +37,6 @@ const AdminOrderDetails = () => {
       try {
         setLoading(true);
         
-        // Récupérer les produits
         const productsResponse = await fetch(`${API_BASE_URL}/product`, {
           headers: {
             "Content-Type": "application/json",
@@ -52,7 +51,6 @@ const AdminOrderDetails = () => {
         const productsData = await productsResponse.json();
         setProducts(productsData);
         
-        // Récupérer les commandes
         const ordersResponse = await fetch(`${API_BASE_URL}/orders`, {
           headers: {
             "Content-Type": "application/json",

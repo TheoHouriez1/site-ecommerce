@@ -25,7 +25,6 @@ const ProductCard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Mémoriser l'extraction de l'ID du produit
   const productId = useMemo(() => {
     const hashValue = window.location.hash;
     
@@ -69,7 +68,6 @@ const ProductCard = () => {
       : ["https://placehold.co/600x800?text=Image+non+disponible"];
   }, [product]);
 
-  // Mémoriser les dates de livraison
   const deliveryDates = useMemo(() => {
     const now = new Date();
     
@@ -88,7 +86,6 @@ const ProductCard = () => {
     };
   }, []);
 
-  // Mémoriser le statut de stock
   const isInStock = useMemo(() => product && product.stock > 0, [product]);
 
   useEffect(() => {
@@ -152,7 +149,6 @@ const ProductCard = () => {
     }
   }, [product]);
 
-  // Optimiser la gestion de la quantité avec useCallback
   const handleQuantityChange = useCallback((change) => {
     if (!product) return;
     
@@ -160,11 +156,9 @@ const ProductCard = () => {
     setQuantity(Math.min(newQuantity, product.stock));
   }, [quantity, product]);
 
-  // Version optimisée d'ajout au panier
   const handleAddToCart = useCallback(async () => {
     if (!product || addingToCart) return;
     
-    // Validation rapide côté client
     if (!isInStock) {
       alert('Ce produit est actuellement épuisé.');
       return;
@@ -202,7 +196,6 @@ const ProductCard = () => {
         throw new Error(errorData.error || 'Erreur lors de l\'ajout au panier');
       }
       
-      // Feedback immédiat
       setShowAddedToCart(true);
       setTimeout(() => setShowAddedToCart(false), 2000);
       

@@ -32,7 +32,6 @@ const CartBadge = React.memo(({ totalItems, isScrolled, onCartClick }) => (
 
 CartBadge.displayName = 'CartBadge';
 
-// Composant UserDropdown mémorisé
 const UserDropdown = React.memo(({ 
   user, 
   isScrolled, 
@@ -163,12 +162,10 @@ export const NavbarComponent = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Mémoriser le calcul du nombre total d'articles
   const totalItems = useMemo(() => {
     return cart.reduce((total, item) => total + (item.quantity || 0), 0);
   }, [cart]);
 
-  // Mémoriser le gestionnaire de scroll
   const handleScroll = useCallback(() => {
     const scrolled = window.scrollY > 50;
     if (scrolled !== isScrolled) {
@@ -178,11 +175,10 @@ export const NavbarComponent = () => {
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Vérifier l'état initial
+    handleScroll(); 
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
-  // Callbacks mémorisés pour éviter les re-rendus
   const handleLogout = useCallback(async () => {
     try {
       await logout();
@@ -215,7 +211,6 @@ export const NavbarComponent = () => {
     setIsMenuOpen(false);
   }, [navigate]);
 
-  // Gestion des clics en dehors du dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isDropdownOpen && !event.target.closest('.user-dropdown-container')) {

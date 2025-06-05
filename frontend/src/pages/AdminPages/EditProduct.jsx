@@ -171,7 +171,6 @@ const EditProduct = () => {
         formDataToSend.append(`sizes[${index}]`, size);
       });
 
-      // Ajout des nouvelles données environnementales
       formDataToSend.append('ecoScore', formData.ecoScore || '');
       formDataToSend.append('labelEcologique', formData.labelEcologique || '');
 

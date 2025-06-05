@@ -22,7 +22,6 @@ import {
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 const API_BASE_URL = 'http://51.159.28.149/theo/site-ecommerce/backend/public/index.php/api';
 
-// Fonction pour calculer le statut automatique basé sur la date de commande
 const getOrderStatus = (orderDate) => {
   const orderDateTime = new Date(orderDate);
   const daysPassed = Math.floor((new Date() - orderDateTime) / (1000 * 60 * 60 * 24));
@@ -33,7 +32,6 @@ const getOrderStatus = (orderDate) => {
   return "Livrée";
 };
 
-// Composant OrderCard pour mobile
 const OrderCard = ({ order, onViewDetails }) => {
   const orderStatus = getOrderStatus(order.date_commande);
 
@@ -138,7 +136,6 @@ const OrderCard = ({ order, onViewDetails }) => {
   );
 };
 
-// Composant TableRow pour desktop
 const OrderTableRow = ({ order, onViewDetails }) => {
   const orderStatus = getOrderStatus(order.date_commande);
 
@@ -212,7 +209,6 @@ const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('date_desc');
 
-  // Fonction pour récupérer les commandes
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -242,7 +238,6 @@ const AdminOrders = () => {
     fetchOrders();
   }, []);
 
-  // Filtrage et tri des commandes
   const filteredAndSortedOrders = useMemo(() => {
     let filtered = orders.filter(order => {
       const orderStatus = getOrderStatus(order.date_commande);
@@ -258,7 +253,6 @@ const AdminOrders = () => {
       return matchesSearch && matchesStatus;
     });
 
-    // Tri
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'date_asc':
@@ -281,7 +275,6 @@ const AdminOrders = () => {
     return filtered;
   }, [orders, searchTerm, statusFilter, sortBy]);
 
-  // Handlers pour les actions
   const handleViewDetails = (order) => {
     navigate(`/admin/orders/${order.id}`);
   };

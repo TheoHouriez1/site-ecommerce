@@ -86,11 +86,9 @@ const PannierPages = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Refs pour éviter les rechargements en boucle
   const hasLoadedRef = useRef(false);
   const currentUserIdRef = useRef(null);
 
-  // Mémoriser le mapping des stocks pour éviter les recalculs
   const stockMap = useMemo(() => {
     const map = new Map();
     products.forEach(product => {
@@ -99,7 +97,6 @@ const PannierPages = () => {
     return map;
   }, [products]);
 
-  // Mémoriser le total du panier
   const cartTotal = useMemo(() => {
     try {
       return getCartTotal();
@@ -109,7 +106,6 @@ const PannierPages = () => {
     }
   }, [cart, getCartTotal]);
 
-  // Fonction de chargement des produits séparée et mémorisée
   const loadProducts = useCallback(async () => {
     try {
       const response = await fetch(API_URL, {
@@ -135,22 +131,18 @@ const PannierPages = () => {
       setError("Erreur lors du chargement des produits");
       setProducts([]);
     }
-  }, []); // Pas de dépendances, cette fonction ne change jamais
+  }, []); 
 
-  // Fonction de chargement du panier séparée et mémorisée
   const loadCart = useCallback(async () => {
     try {
       await fetchCartFromServer();
     } catch (err) {
       console.error("Erreur récupération panier :", err);
-      // Ne pas arrêter le chargement pour une erreur de panier
     }
   }, [fetchCartFromServer]);
 
-  // Effect principal - ne se déclenche qu'une fois ou quand l'utilisateur change
   useEffect(() => {
     const loadData = async () => {
-      // Vérifier si on a déjà chargé pour cet utilisateur
       const currentUserId = user?.id || 'guest';
       if (hasLoadedRef.current && currentUserIdRef.current === currentUserId) {
         return;
@@ -160,13 +152,11 @@ const PannierPages = () => {
       setError(null);
       
       try {
-        // Charger en parallèle mais ne pas bloquer si l'un échoue
         await Promise.allSettled([
           loadCart(),
           loadProducts()
         ]);
         
-        // Marquer comme chargé pour cet utilisateur
         hasLoadedRef.current = true;
         currentUserIdRef.current = currentUserId;
         
@@ -179,9 +169,8 @@ const PannierPages = () => {
     };
 
     loadData();
-  }, [user?.id, loadCart, loadProducts]); // Seulement quand l'ID utilisateur change
+  }, [user?.id, loadCart, loadProducts]); 
 
-  // Réinitialiser le flag de chargement quand l'utilisateur change
   useEffect(() => {
     const currentUserId = user?.id || 'guest';
     if (currentUserIdRef.current !== currentUserId) {
@@ -189,7 +178,6 @@ const PannierPages = () => {
     }
   }, [user?.id]);
 
-  // Composant de chargement
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -201,7 +189,6 @@ const PannierPages = () => {
     );
   }
 
-  // Affichage d'erreur
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -222,7 +209,6 @@ const PannierPages = () => {
     );
   }
 
-  // Panier vide
   if (!loading && (!cart || cart.length === 0)) {
     return (
       <div className="min-h-screen bg-gray-50">

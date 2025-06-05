@@ -136,7 +136,6 @@ const CreateProduct = () => {
         formDataToSend.append(`sizes[${index}]`, size);
       });
 
-      // Ajout des nouvelles données environnementales
       if (formData.ecoScore) formDataToSend.append('ecoScore', formData.ecoScore);
       if (formData.labelEcologique) formDataToSend.append('labelEcologique', formData.labelEcologique);
 
